@@ -42,7 +42,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build \
+            cmake ninja-build pkg-config \
             clang-19 \
             libsystemd-dev \
             libgtest-dev
@@ -67,6 +67,6 @@ jobs:
       - run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build clang-19 \
+            cmake ninja-build pkg-config clang-19 \
             libsystemd-dev libgtest-dev
       - run: ./scripts/asan.sh build-asan
