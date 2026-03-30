@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <node>
   <interface name="org.freedesktop.PackageKit.Offline">
-    <method name="ClearResults"></method>
+    <method name="ClearResults"/>
     <method name="Trigger">
-      <arg type="s" name="action" direction="in"></arg>
+      <arg type="s" name="action" direction="in"/>
     </method>
     <method name="TriggerUpgrade">
-      <arg type="s" name="action" direction="in"></arg>
+      <arg type="s" name="action" direction="in"/>
     </method>
-    <method name="Cancel"></method>
+    <method name="Cancel"/>
     <method name="GetPrepared">
-      <arg type="as" name="package_ids" direction="out"></arg>
+      <arg type="as" name="package_ids" direction="out"/>
     </method>
-    <property type="b" name="UpdatePrepared" access="read"></property>
-    <property type="b" name="UpdateTriggered" access="read"></property>
-    <property type="b" name="UpgradePrepared" access="read"></property>
-    <property type="b" name="UpgradeTriggered" access="read"></property>
+    <property type="b" name="UpdatePrepared" access="read"/>
+    <property type="b" name="UpdateTriggered" access="read"/>
+    <property type="b" name="UpgradePrepared" access="read"/>
+    <property type="b" name="UpgradeTriggered" access="read"/>
     <property type="a{sv}" name="PreparedUpgrade" access="read">
-      <annotation name="org.qtproject.QtDBus.QtTypeName" value="QVariantMap"></annotation>
+      <annotation name="org.qtproject.QtDBus.QtTypeName" value="QVariantMap"/>
     </property>
-    <property type="s" name="TriggerAction" access="read"></property>
+    <property type="s" name="TriggerAction" access="read"/>
   </interface>
 </node>

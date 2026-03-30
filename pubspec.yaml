@@ -1,11 +1,11 @@
 name: packagekit_dart
-description: >
-  Typed Dart API for the PackageKit D-Bus package manager abstraction layer.
-  Supports search, install, update, remove, and repo management across
-  APT, DNF, Zypper, and other PackageKit backends.
-  Uses native_comms + sdbus-cpp v2 for typed D-Bus signal delivery.
+description: >-
+  Typed Dart API for PackageKit, the cross-distro Linux package manager.
+  Search, install, update, remove packages and manage repos via D-Bus
+  with async streams and full dependency resolution support.
 version: 0.1.0
-repository: https://github.com/<org>/packagekit_dart
+repository: https://github.com/meta-flutter/packagekit_dart
+issue_tracker: https://github.com/meta-flutter/packagekit_dart/issues
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -15,10 +15,10 @@ dependencies:
   path: ^1.9.0
 
 dev_dependencies:
-  test:         ^1.24.0
-  mockito:      ^5.4.0
-  build_runner: ^2.4.0
-  lints:        ^4.0.0
-  coverage:     ^1.7.0
+  test:     ^1.24.0
+  lints:    ^4.0.0
+
+platforms:
+  linux:
 
 topics: [linux, packagekit, dbus, package-manager, ffi]

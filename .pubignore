@@ -1,0 +1,5 @@
+native/
+build/
+interfaces/
+.github/
+CMakeLists.txt

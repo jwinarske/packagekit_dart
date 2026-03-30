@@ -31,9 +31,11 @@ enum PkFilter {
   downloaded(1 << 26),
   notDownloaded(1 << 27);
 
+  /// The underlying D-Bus bitfield value.
   final int value;
   const PkFilter(this.value);
 
+  /// Combines multiple filters into a single bitfield using bitwise OR.
   static int combine(Iterable<PkFilter> filters) =>
       filters.fold(0, (acc, f) => acc | f.value);
 }
@@ -47,9 +49,11 @@ enum PkTransactionFlag {
   justReinstall(1 << 5),
   allowDowngrade(1 << 6);
 
+  /// The underlying D-Bus bitfield value.
   final int value;
   const PkTransactionFlag(this.value);
 
+  /// Combines multiple flags into a single bitfield using bitwise OR.
   static int combine(Iterable<PkTransactionFlag> flags) =>
       flags.fold(0, (acc, f) => acc | f.value);
 }
@@ -83,8 +87,11 @@ enum PkInfo {
   trusted(24),
   unavailable(25);
 
+  /// The underlying PK_INFO_ENUM_* integer value.
   final int value;
   const PkInfo(this.value);
+
+  /// Looks up the [PkInfo] for the given integer, falling back to [unknown].
   static PkInfo fromInt(int v) => PkInfo.values
       .firstWhere((e) => e.value == v, orElse: () => PkInfo.unknown);
 }
@@ -129,8 +136,11 @@ enum PkStatus {
   copyFiles(35),
   runHook(36);
 
+  /// The underlying PK_STATUS_ENUM_* integer value.
   final int value;
   const PkStatus(this.value);
+
+  /// Looks up the [PkStatus] for the given integer, falling back to [unknown].
   static PkStatus fromInt(int v) => PkStatus.values
       .firstWhere((e) => e.value == v, orElse: () => PkStatus.unknown);
 }
@@ -150,8 +160,11 @@ enum PkExit {
   skipTransaction(10),
   repairRequired(11);
 
+  /// The underlying PK_EXIT_ENUM_* integer value.
   final int value;
   const PkExit(this.value);
+
+  /// Looks up the [PkExit] for the given integer, falling back to [unknown].
   static PkExit fromInt(int v) => PkExit.values
       .firstWhere((e) => e.value == v, orElse: () => PkExit.unknown);
 }
@@ -228,8 +241,11 @@ enum PkError {
   lockRequired(67),
   repoAlreadySet(68);
 
+  /// The underlying PK_ERROR_ENUM_* integer value.
   final int value;
   const PkError(this.value);
+
+  /// Looks up the [PkError] for the given integer, falling back to [unknown].
   static PkError fromInt(int v) => PkError.values
       .firstWhere((e) => e.value == v, orElse: () => PkError.unknown);
 }

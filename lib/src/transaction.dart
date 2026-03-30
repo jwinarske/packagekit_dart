@@ -9,7 +9,10 @@ import 'repo.dart';
 
 /// Live transaction progress.
 class PkProgress {
+  /// The package identifier this progress applies to (empty for overall).
   final String packageId;
+
+  /// Current transaction status.
   final PkStatus status;
 
   /// 0-100; 101 means unknown (backend hasn't reported yet).
@@ -19,6 +22,7 @@ class PkProgress {
   /// the overall transaction progress (Progress signal).
   final bool isItem;
 
+  /// Creates a [PkProgress] instance.
   const PkProgress({
     required this.packageId,
     required this.status,
@@ -26,17 +30,26 @@ class PkProgress {
     required this.isItem,
   });
 
+  /// Whether the backend has reported a numeric percentage.
   bool get percentageKnown => percentage <= 100;
 
+  /// Human-readable progress string (e.g. "42%  [install]" or "[query]").
   String get progressLabel =>
       percentageKnown ? '$percentage%  [$status]' : '[${status.name}]';
 }
 
 /// Transaction completion result.
 class PkTransactionResult {
+  /// The exit code of the transaction.
   final PkExit exit;
+
+  /// Wall-clock runtime in milliseconds.
   final int runtimeMs;
+
+  /// Creates a [PkTransactionResult] instance.
   const PkTransactionResult({required this.exit, required this.runtimeMs});
+
+  /// Whether the transaction completed successfully.
   bool get success => exit == PkExit.success;
 }
 
@@ -51,13 +64,25 @@ class PkTransactionResult {
 /// and may install different versions or additional/fewer dependencies if
 /// the database changed in the interval.
 class PkInstallPlan {
+  /// Packages that will be newly installed.
   final List<PkPackage> installing;
+
+  /// Packages that will be updated to a newer version.
   final List<PkPackage> updating;
+
+  /// Packages that will be removed.
   final List<PkPackage> removing;
+
+  /// Packages that will be reinstalled.
   final List<PkPackage> reinstalling;
+
+  /// Packages that will be downgraded.
   final List<PkPackage> downgrading;
+
+  /// Packages that will be obsoleted by other packages.
   final List<PkPackage> obsoleting;
 
+  /// Creates a [PkInstallPlan] instance.
   const PkInstallPlan({
     required this.installing,
     required this.updating,
@@ -67,6 +92,7 @@ class PkInstallPlan {
     required this.obsoleting,
   });
 
+  /// Raw package ID strings for all non-removal changes.
   List<String> get allIds => [
         ...installing,
         ...updating,
@@ -74,6 +100,7 @@ class PkInstallPlan {
         ...downgrading,
       ].map((p) => p.id.raw).toList();
 
+  /// Whether this plan contains no changes at all.
   bool get isEmpty =>
       installing.isEmpty &&
       updating.isEmpty &&
@@ -82,6 +109,7 @@ class PkInstallPlan {
       downgrading.isEmpty &&
       obsoleting.isEmpty;
 
+  /// Total number of packages affected across all categories.
   int get changeCount =>
       installing.length +
       updating.length +
@@ -96,7 +124,7 @@ class PkInstallPlan {
       '${obsoleting.isNotEmpty ? " obs:${obsoleting.length}" : ""})';
 }
 
-/// Build a [PkInstallPlan] from the Package signals emitted by a simulate
+/// Builds a [PkInstallPlan] from the Package signals emitted by a simulate
 /// transaction.
 PkInstallPlan planFromPackages(List<PkPackage> pkgs) {
   final installing = <PkPackage>[];
@@ -135,21 +163,51 @@ PkInstallPlan planFromPackages(List<PkPackage> pkgs) {
 }
 
 /// A live PackageKit transaction.
+///
+/// Streams emit D-Bus signals as they arrive from the daemon. Listen to
+/// [packages], [details], [progress], etc. to observe the transaction.
+/// Await [result] to get the final exit code, or call [cancel] to abort.
 class PkTransaction {
+  /// Stream of packages emitted by Package signals.
   final Stream<PkPackage> packages;
+
+  /// Stream of detailed package info from Details signals.
   final Stream<PkPackageDetail> details;
+
+  /// Stream of update details from UpdateDetail signals.
   final Stream<PkUpdateDetail> updateDetails;
+
+  /// Stream of repository details from RepoDetail signals.
   final Stream<PkRepoDetail> repoDetails;
+
+  /// Stream of file lists from Files signals.
   final Stream<PkFiles> files;
+
+  /// Stream of progress updates from Progress / ItemProgress signals.
   final Stream<PkProgress> progress;
+
+  /// Stream of daemon messages from Message signals.
   final Stream<PkMessage> messages;
+
+  /// Stream of EULA requirements from EulaRequired signals.
   final Stream<PkEulaRequired> eulaRequired;
+
+  /// Stream of repo signature requirements from RepoSignatureRequired signals.
   final Stream<PkRepoSigRequired> repoSigRequired;
+
+  /// Stream of restart requirements from RequireRestart signals.
   final Stream<PkRequireRestart> requireRestart;
+
+  /// Stream of error codes from ErrorCode signals.
   final Stream<PkErrorCode> errors;
+
+  /// Completes with the transaction result, or throws [PkTransactionException].
   final Future<PkTransactionResult> result;
+
+  /// Cancels the running transaction.
   final void Function() cancel;
 
+  /// Creates a [PkTransaction] instance.
   const PkTransaction({
     required this.packages,
     required this.details,
