@@ -47,3 +47,17 @@ jobs:
           cmake --build build --parallel
       - name: C++ unit tests
         run: ctest --test-dir build/test --output-on-failure -j4
+
+  # ── ASAN + UBSan ─────────────────────────────────────────────────────────
+  asan:
+    name: ASAN + UBSan (Ubuntu x86_64)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build clang-19 \
+            libsystemd-dev libgtest-dev
+      - run: ./scripts/asan.sh build-asan
