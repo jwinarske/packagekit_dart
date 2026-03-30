@@ -22,7 +22,7 @@ jobs:
         with: { sdk: stable }
       - run: dart format --set-exit-if-changed lib/ test/
 
-  # ── Release build (Ubuntu 24.04 x86_64, no tests yet) ─────────────────────
+  # ── Ubuntu 24.04 x86_64 ──────────────────────────────────────────────────
   build-ubuntu-x64:
     name: Ubuntu 24.04 / x86_64
     runs-on: ubuntu-24.04
@@ -35,11 +35,15 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build \
             clang-19 \
-            libsystemd-dev
+            libsystemd-dev \
+            libgtest-dev
       - name: Build (Release)
         run: |
           cmake -B build native/ -GNinja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CXX_COMPILER=clang++-19 \
-            -DCMAKE_C_COMPILER=clang-19
+            -DCMAKE_C_COMPILER=clang-19 \
+            -DBUILD_TESTING=ON
           cmake --build build --parallel
+      - name: C++ unit tests
+        run: ctest --test-dir build/test --output-on-failure -j4
