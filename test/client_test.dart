@@ -12,8 +12,7 @@ void main() {
     });
 
     test('combine multiple', () {
-      final result =
-          PkFilter.combine([PkFilter.installed, PkFilter.newest]);
+      final result = PkFilter.combine([PkFilter.installed, PkFilter.newest]);
       expect(result, PkFilter.installed.value | PkFilter.newest.value);
     });
   });
@@ -77,8 +76,8 @@ void main() {
     });
 
     test('PkTransactionException', () {
-      const e = PkTransactionException('failed',
-          exit: PkExit.failed, runtimeMs: 123);
+      const e =
+          PkTransactionException('failed', exit: PkExit.failed, runtimeMs: 123);
       expect(e.toString(), contains('failed'));
       expect(e.exit, PkExit.failed);
       expect(e.runtimeMs, 123);

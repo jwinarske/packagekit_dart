@@ -38,8 +38,7 @@ void main() {
   group('PkPackageDetail', () {
     test('sizeFormatted GiB', () {
       const d = PkPackageDetail(
-        id: PkPackageId(
-            name: 'a', version: '1', arch: 'x86_64', data: 'repo'),
+        id: PkPackageId(name: 'a', version: '1', arch: 'x86_64', data: 'repo'),
         summary: '',
         description: '',
         url: '',
@@ -52,8 +51,7 @@ void main() {
 
     test('sizeFormatted MiB', () {
       const d = PkPackageDetail(
-        id: PkPackageId(
-            name: 'a', version: '1', arch: 'x86_64', data: 'repo'),
+        id: PkPackageId(name: 'a', version: '1', arch: 'x86_64', data: 'repo'),
         summary: '',
         description: '',
         url: '',
@@ -66,8 +64,7 @@ void main() {
 
     test('sizeFormatted unknown', () {
       const d = PkPackageDetail(
-        id: PkPackageId(
-            name: 'a', version: '1', arch: 'x86_64', data: 'repo'),
+        id: PkPackageId(name: 'a', version: '1', arch: 'x86_64', data: 'repo'),
         summary: '',
         description: '',
         url: '',

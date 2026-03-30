@@ -3,6 +3,7 @@
 // PkClient is the top-level API entry point.
 
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:isolate';
 import 'dart:typed_data';
 
@@ -43,11 +44,18 @@ class PkClient {
     _eventsPort.listen(_onManagerEvent);
   }
 
+  static bool _initialized = false;
+
   /// Connect to the PackageKit daemon on the system bus.
   static Future<PkClient> connect() async {
+    if (!_initialized) {
+      PkBindings.init(NativeApi.initializeApiDLData);
+      _initialized = true;
+    }
     final port = ReceivePort('packagekit.manager');
     final handle = PkBindings.managerCreate(port.sendPort.nativePort);
-    if (handle == null) {
+    if ((handle as Pointer).address == 0) {
+      port.close();
       throw const PkServiceUnavailableException(
           'Failed to connect to org.freedesktop.PackageKit on the system bus.');
     }
@@ -68,8 +76,8 @@ class PkClient {
     String query, {
     List<PkFilter> filters = const [PkFilter.none],
   }) =>
-      _startQuery((h) =>
-          PkBindings.searchName(h, PkFilter.combine(filters), [query]));
+      _startQuery(
+          (h) => PkBindings.searchName(h, PkFilter.combine(filters), [query]));
 
   PkTransaction searchDetails(
     String query, {
@@ -82,14 +90,13 @@ class PkClient {
     String path, {
     List<PkFilter> filters = const [PkFilter.none],
   }) =>
-      _startQuery((h) =>
-          PkBindings.searchFiles(h, PkFilter.combine(filters), [path]));
+      _startQuery(
+          (h) => PkBindings.searchFiles(h, PkFilter.combine(filters), [path]));
 
   PkTransaction getPackages({
     List<PkFilter> filters = const [PkFilter.installed],
   }) =>
-      _startQuery(
-          (h) => PkBindings.getPackages(h, PkFilter.combine(filters)));
+      _startQuery((h) => PkBindings.getPackages(h, PkFilter.combine(filters)));
 
   PkTransaction getUpdates({
     List<PkFilter> filters = const [PkFilter.none],
@@ -115,8 +122,7 @@ class PkClient {
   PkTransaction getRepoList({
     List<PkFilter> filters = const [PkFilter.none],
   }) =>
-      _startQuery(
-          (h) => PkBindings.getRepoList(h, PkFilter.combine(filters)));
+      _startQuery((h) => PkBindings.getRepoList(h, PkFilter.combine(filters)));
 
   PkTransaction dependsOn(
     List<String> packageIds, {
@@ -194,12 +200,8 @@ class PkClient {
     bool autoremove = false,
     List<PkTransactionFlag> flags = const [PkTransactionFlag.onlyTrusted],
   }) =>
-      _startQuery((h) => PkBindings.removePackages(
-          h,
-          PkTransactionFlag.combine(flags),
-          packageIds,
-          allowDeps,
-          autoremove));
+      _startQuery((h) => PkBindings.removePackages(h,
+          PkTransactionFlag.combine(flags), packageIds, allowDeps, autoremove));
 
   PkTransaction updatePackages(
     List<String> packageIds, {
@@ -215,8 +217,8 @@ class PkClient {
     List<String> paths, {
     List<PkTransactionFlag> flags = const [PkTransactionFlag.onlyTrusted],
   }) =>
-      _startQuery((h) => PkBindings.installFiles(
-          h, PkTransactionFlag.combine(flags), paths));
+      _startQuery((h) =>
+          PkBindings.installFiles(h, PkTransactionFlag.combine(flags), paths));
 
   PkTransaction downloadPackages(
     List<String> packageIds, {
@@ -246,9 +248,16 @@ class PkClient {
     _daemonEvents.stream
         .where((e) => e is PkPropsEvent)
         .first
-        .then((_) => c.complete());
+        .then((_) {
+      if (!c.isCompleted) c.complete();
+    });
     PkBindings.managerReadProperties(_managerHandle);
-    await c.future;
+    await c.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        if (!c.isCompleted) c.complete();
+      },
+    );
   }
 
   PkTransaction _startQuery(void Function(Object txHandle) invoke) {
@@ -269,7 +278,17 @@ class PkClient {
 
     void close() {
       for (final c in [
-        pkgs, dets, updDets, repos, fls, prog, msgs, eula, sig, restart, errs
+        pkgs,
+        dets,
+        updDets,
+        repos,
+        fls,
+        prog,
+        msgs,
+        eula,
+        sig,
+        restart,
+        errs
       ]) {
         if (!c.isClosed) c.close();
       }
@@ -322,8 +341,14 @@ class PkClient {
 
     final txHandle =
         PkBindings.transactionCreate(_managerHandle, port.sendPort.nativePort);
-    PkBindings.transactionSetHints(txHandle, 'en_US.UTF-8');
-    invoke(txHandle);
+    if ((txHandle as Pointer).address == 0) {
+      close();
+      done.completeError(const PkServiceUnavailableException(
+          'Failed to create PackageKit transaction.'));
+    } else {
+      PkBindings.transactionSetHints(txHandle, 'en_US.UTF-8');
+      invoke(txHandle);
+    }
 
     return PkTransaction(
       packages: pkgs.stream,
@@ -353,8 +378,9 @@ class PkClient {
       case 0xD1:
         _daemonEvents.add(PkRepoListChangedEvent());
       case 0xD2:
-        final state = msg.buffer.asByteData(msg.offsetInBytes).getUint32(
-            1, Endian.little);
+        final state = msg.buffer
+            .asByteData(msg.offsetInBytes)
+            .getUint32(1, Endian.little);
         _daemonEvents.add(PkNetworkStateChangedEvent(state));
     }
   }

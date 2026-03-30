@@ -20,60 +20,67 @@
 
 #include "dart_api_dl.h"
 
+#define PK_EXPORT __attribute__((visibility("default")))
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Initialise Dart API dynamic linking. Call once at startup.
-void pk_bridge_init(void* dart_api_dl_data);
+PK_EXPORT void pk_bridge_init(void* dart_api_dl_data);
 
 // ── Manager ──────────────────────────────────────────────────────────────────
 // events_port receives: 0x0C PkManagerProps on connect, then
 //   UpdatesChanged / RepoListChanged / NetworkStateChanged daemon signals.
-void* pk_manager_create(Dart_Port events_port);
-void pk_manager_destroy(void* handle);
-void pk_manager_read_properties(void* handle);
+PK_EXPORT void* pk_manager_create(Dart_Port events_port);
+PK_EXPORT void  pk_manager_destroy(void* handle);
+PK_EXPORT void  pk_manager_read_properties(void* handle);
 
 // ── Transaction ───────────────────────────────────────────────────────────────
-// tx_port receives: discriminator-tagged glaze payloads for every signal
-// the transaction emits, then 0x20 Finished and 0xFF sentinel.
-// The bridge destroys itself after posting the sentinel (Destroy signal).
-void* pk_transaction_create(void* manager, Dart_Port tx_port);
-void pk_transaction_destroy(void* handle);  // only needed on error paths
-
-// Must call before any method. Sets locale, background, plural-signals hints.
-void pk_transaction_set_hints(void* handle, const char* locale);
+PK_EXPORT void* pk_transaction_create(void* manager, Dart_Port tx_port);
+PK_EXPORT void  pk_transaction_destroy(void* handle);
+PK_EXPORT void  pk_transaction_set_hints(void* handle, const char* locale);
 
 // ── Query methods ─────────────────────────────────────────────────────────────
-void pk_search_name(void* handle, uint64_t filter, const char* const* values, int n_values);
-void pk_search_details(void* handle, uint64_t filter, const char* const* values, int n_values);
-void pk_search_files(void* handle, uint64_t filter, const char* const* values, int n_values);
-void pk_search_groups(void* handle, uint64_t filter, const char* const* values, int n_values);
-void pk_get_packages(void* handle, uint64_t filter);
-void pk_get_updates(void* handle, uint64_t filter);
-void pk_resolve(void* handle, uint64_t filter, const char* const* ids, int n_ids);
-void pk_get_details(void* handle, const char* const* ids, int n_ids);
-void pk_get_update_detail(void* handle, const char* const* ids, int n_ids);
-void pk_get_files(void* handle, const char* const* ids, int n_ids);
-void pk_get_repo_list(void* handle, uint64_t filter);
-void pk_depends_on(void* handle, uint64_t filter, const char* const* ids, int n_ids,
-                   bool recursive);
-void pk_required_by(void* handle, uint64_t filter, const char* const* ids, int n_ids,
-                    bool recursive);
-void pk_get_distro_upgrades(void* handle);
-void pk_get_old_transactions(void* handle, uint32_t number);
+PK_EXPORT void pk_search_name(void* handle, uint64_t filter,
+                              const char* const* values, int n_values);
+PK_EXPORT void pk_search_details(void* handle, uint64_t filter,
+                                 const char* const* values, int n_values);
+PK_EXPORT void pk_search_files(void* handle, uint64_t filter,
+                               const char* const* values, int n_values);
+PK_EXPORT void pk_search_groups(void* handle, uint64_t filter,
+                                const char* const* values, int n_values);
+PK_EXPORT void pk_get_packages(void* handle, uint64_t filter);
+PK_EXPORT void pk_get_updates(void* handle, uint64_t filter);
+PK_EXPORT void pk_resolve(void* handle, uint64_t filter,
+                          const char* const* ids, int n_ids);
+PK_EXPORT void pk_get_details(void* handle, const char* const* ids, int n_ids);
+PK_EXPORT void pk_get_update_detail(void* handle, const char* const* ids, int n_ids);
+PK_EXPORT void pk_get_files(void* handle, const char* const* ids, int n_ids);
+PK_EXPORT void pk_get_repo_list(void* handle, uint64_t filter);
+PK_EXPORT void pk_depends_on(void* handle, uint64_t filter,
+                             const char* const* ids, int n_ids, bool recursive);
+PK_EXPORT void pk_required_by(void* handle, uint64_t filter,
+                              const char* const* ids, int n_ids, bool recursive);
+PK_EXPORT void pk_get_distro_upgrades(void* handle);
+PK_EXPORT void pk_get_old_transactions(void* handle, uint32_t number);
 
 // ── Write methods (polkit handled by packagekitd) ──────────────────────────
-void pk_install_packages(void* handle, uint64_t flags, const char* const* ids, int n_ids);
-void pk_remove_packages(void* handle, uint64_t flags, const char* const* ids, int n_ids,
-                        bool allow_deps, bool autoremove);
-void pk_update_packages(void* handle, uint64_t flags, const char* const* ids, int n_ids);
-void pk_refresh_cache(void* handle, bool force);
-void pk_download_packages(void* handle, bool store_in_cache, const char* const* ids, int n_ids);
-void pk_install_files(void* handle, uint64_t flags, const char* const* paths, int n_paths);
-void pk_repo_enable(void* handle, const char* repo_id, bool enabled);
-void pk_accept_eula(void* handle, const char* eula_id);
-void pk_cancel(void* handle);
+PK_EXPORT void pk_install_packages(void* handle, uint64_t flags,
+                                   const char* const* ids, int n_ids);
+PK_EXPORT void pk_remove_packages(void* handle, uint64_t flags,
+                                  const char* const* ids, int n_ids,
+                                  bool allow_deps, bool autoremove);
+PK_EXPORT void pk_update_packages(void* handle, uint64_t flags,
+                                  const char* const* ids, int n_ids);
+PK_EXPORT void pk_refresh_cache(void* handle, bool force);
+PK_EXPORT void pk_download_packages(void* handle, bool store_in_cache,
+                                    const char* const* ids, int n_ids);
+PK_EXPORT void pk_install_files(void* handle, uint64_t flags,
+                                const char* const* paths, int n_paths);
+PK_EXPORT void pk_repo_enable(void* handle, const char* repo_id, bool enabled);
+PK_EXPORT void pk_accept_eula(void* handle, const char* eula_id);
+PK_EXPORT void pk_cancel(void* handle);
 
 #ifdef __cplusplus
 }

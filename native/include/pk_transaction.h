@@ -69,6 +69,10 @@ class PkTransactionBridge {
     void acceptEula(const std::string& eula_id);
     void cancel();
 
+    // Post a synthetic error + finished(failed) to the Dart port.
+    // Called by the C ABI bridge when a D-Bus method call throws.
+    void postError(const std::string& message);
+
    private:
     // Signal handlers — all called on the sdbus event loop thread.
     void onPackage(uint32_t info, const std::string& pkg_id, const std::string& summary);

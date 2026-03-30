@@ -6,6 +6,7 @@ import '../details.dart';
 import '../enums.dart';
 import '../package.dart';
 import '../repo.dart';
+import '../transaction.dart' show PkProgress;
 import 'types.dart';
 
 /// Decodes glaze binary payloads from the native bridge.

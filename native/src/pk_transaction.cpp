@@ -254,6 +254,12 @@ void PkTransactionBridge::cancel() {
     proxy_->callMethod("Cancel").onInterface(PK_TX_IFACE);
 }
 
+void PkTransactionBridge::postError(const std::string& message) {
+    PkErrorCode ec{.code = 4, .details = message};  // 4 = internal-error
+    post(kErrorCode, ec);
+    postFinished(2, 0);  // 2 = PK_EXIT_ENUM_FAILED
+}
+
 // ── Signal handlers ──────────────────────────────────────────────────────────
 
 void PkTransactionBridge::onPackage(uint32_t info, const std::string& pkg_id,

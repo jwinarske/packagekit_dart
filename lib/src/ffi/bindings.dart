@@ -12,9 +12,8 @@ class PkBindings {
 
   static final DynamicLibrary _lib = loadPackagekitNc();
 
-  static final _init = _lib
-      .lookupFunction<Void Function(Pointer<Void>), void Function(Pointer<Void>)>(
-          'pk_bridge_init');
+  static final _init = _lib.lookupFunction<Void Function(Pointer<Void>),
+      void Function(Pointer<Void>)>('pk_bridge_init');
 
   static void init(Pointer<Void> dartApiDlData) => _init(dartApiDlData);
 
@@ -45,14 +44,12 @@ class PkBindings {
       Pointer<Void> Function(Pointer<Void>, Int64),
       Pointer<Void> Function(Pointer<Void>, int)>('pk_transaction_create');
 
-  static final _txDestroy = _lib.lookupFunction<
-      Void Function(Pointer<Void>),
+  static final _txDestroy = _lib.lookupFunction<Void Function(Pointer<Void>),
       void Function(Pointer<Void>)>('pk_transaction_destroy');
 
   static final _txSetHints = _lib.lookupFunction<
       Void Function(Pointer<Void>, Pointer<Utf8>),
-      void Function(
-          Pointer<Void>, Pointer<Utf8>)>('pk_transaction_set_hints');
+      void Function(Pointer<Void>, Pointer<Utf8>)>('pk_transaction_set_hints');
 
   static Pointer<Void> transactionCreate(Object manager, int txPort) =>
       _txCreate(manager as Pointer<Void>, txPort);
@@ -133,8 +130,7 @@ class PkBindings {
   static void refreshCache(Object h, bool force) =>
       _refreshCache(h as Pointer<Void>, force);
 
-  static void downloadPackages(
-      Object h, bool storeInCache, List<String> ids) {
+  static void downloadPackages(Object h, bool storeInCache, List<String> ids) {
     final arr = _allocStringArray(ids);
     _downloadPackages(h as Pointer<Void>, storeInCache, arr, ids.length);
     _freeStringArray(arr, ids.length);
@@ -162,8 +158,8 @@ class PkBindings {
 
   static final _searchName = _lib.lookupFunction<
       Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32),
-      void Function(Pointer<Void>, int, Pointer<Pointer<Utf8>>,
-          int)>('pk_search_name');
+      void Function(
+          Pointer<Void>, int, Pointer<Pointer<Utf8>>, int)>('pk_search_name');
 
   static final _searchDetails = _lib.lookupFunction<
       Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32),
@@ -172,8 +168,8 @@ class PkBindings {
 
   static final _searchFiles = _lib.lookupFunction<
       Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32),
-      void Function(Pointer<Void>, int, Pointer<Pointer<Utf8>>,
-          int)>('pk_search_files');
+      void Function(
+          Pointer<Void>, int, Pointer<Pointer<Utf8>>, int)>('pk_search_files');
 
   static final _getPackages = _lib.lookupFunction<
       Void Function(Pointer<Void>, Uint64),
@@ -195,8 +191,8 @@ class PkBindings {
 
   static final _getUpdateDetail = _lib.lookupFunction<
       Void Function(Pointer<Void>, Pointer<Pointer<Utf8>>, Int32),
-      void Function(Pointer<Void>, Pointer<Pointer<Utf8>>,
-          int)>('pk_get_update_detail');
+      void Function(
+          Pointer<Void>, Pointer<Pointer<Utf8>>, int)>('pk_get_update_detail');
 
   static final _getFiles = _lib.lookupFunction<
       Void Function(Pointer<Void>, Pointer<Pointer<Utf8>>, Int32),
@@ -208,14 +204,12 @@ class PkBindings {
       void Function(Pointer<Void>, int)>('pk_get_repo_list');
 
   static final _dependsOn = _lib.lookupFunction<
-      Void Function(
-          Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32, Bool),
+      Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32, Bool),
       void Function(Pointer<Void>, int, Pointer<Pointer<Utf8>>, int,
           bool)>('pk_depends_on');
 
   static final _requiredBy = _lib.lookupFunction<
-      Void Function(
-          Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32, Bool),
+      Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32, Bool),
       void Function(Pointer<Void>, int, Pointer<Pointer<Utf8>>, int,
           bool)>('pk_required_by');
 
@@ -229,8 +223,8 @@ class PkBindings {
           int)>('pk_install_packages');
 
   static final _removePackages = _lib.lookupFunction<
-      Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32,
-          Bool, Bool),
+      Void Function(
+          Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32, Bool, Bool),
       void Function(Pointer<Void>, int, Pointer<Pointer<Utf8>>, int, bool,
           bool)>('pk_remove_packages');
 
@@ -250,20 +244,18 @@ class PkBindings {
 
   static final _installFiles = _lib.lookupFunction<
       Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32),
-      void Function(Pointer<Void>, int, Pointer<Pointer<Utf8>>,
-          int)>('pk_install_files');
+      void Function(
+          Pointer<Void>, int, Pointer<Pointer<Utf8>>, int)>('pk_install_files');
 
   static final _repoEnable = _lib.lookupFunction<
       Void Function(Pointer<Void>, Pointer<Utf8>, Bool),
-      void Function(
-          Pointer<Void>, Pointer<Utf8>, bool)>('pk_repo_enable');
+      void Function(Pointer<Void>, Pointer<Utf8>, bool)>('pk_repo_enable');
 
   static final _acceptEula = _lib.lookupFunction<
       Void Function(Pointer<Void>, Pointer<Utf8>),
       void Function(Pointer<Void>, Pointer<Utf8>)>('pk_accept_eula');
 
-  static final _cancel = _lib.lookupFunction<
-      Void Function(Pointer<Void>),
+  static final _cancel = _lib.lookupFunction<Void Function(Pointer<Void>),
       void Function(Pointer<Void>)>('pk_cancel');
 
   // ── Helpers ────────────────────────────────────────────────────────────────
