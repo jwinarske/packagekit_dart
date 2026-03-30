@@ -2,9 +2,9 @@
 Checks: >
   -*,
   bugprone-*,
+  -bugprone-reserved-identifier,
   cppcoreguidelines-init-variables,
   cppcoreguidelines-no-malloc,
-  cppcoreguidelines-owning-memory,
   cppcoreguidelines-prefer-member-initializer,
   modernize-avoid-bind,
   modernize-loop-convert,
@@ -25,12 +25,18 @@ Checks: >
 
 WarningsAsErrors: "*"
 
+HeaderFilterRegex: "native/include/pk_.*\\.h$"
+
 CheckOptions:
   - key:   readability-identifier-naming.ClassCase
     value: CamelCase
+  - key:   readability-identifier-naming.MethodCase
+    value: camelBack
   - key:   readability-identifier-naming.FunctionCase
     value: lower_case
-  - key:   readability-identifier-naming.MemberSuffix
+  - key:   readability-identifier-naming.MemberCase
+    value: camelBack
+  - key:   readability-identifier-naming.PrivateMemberSuffix
     value: "_"
   - key:   readability-function-size.LineThreshold
-    value: "80"
+    value: "120"

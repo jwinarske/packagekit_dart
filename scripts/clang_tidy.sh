@@ -23,11 +23,13 @@ if [[ ! -f "$BUILD_DIR/compile_commands.json" ]]; then
     exit 1
 fi
 
-# Collect all C++ sources under native/ (skip third_party and generated).
+# Collect .cpp sources under native/ (skip third_party and generated).
+# Headers are checked transitively via #include; running clang-tidy on
+# standalone .h files fails without compile context.
 FILES=()
 while IFS= read -r -d '' f; do
     FILES+=("$f")
-done < <(find "$NATIVE_DIR" \( -name '*.cpp' -o -name '*.h' \) \
+done < <(find "$NATIVE_DIR" -name '*.cpp' \
     -not -path '*/third_party/*' -not -path '*/generated/*' -print0)
 
 if [[ ${#FILES[@]} -eq 0 ]]; then

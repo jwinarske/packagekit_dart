@@ -8,6 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ── sdbus-cpp v2 as submodule (matches jwinarske/sdbus-cpp-examples) ──────────
 # This avoids the system sdbus-cpp version lottery across distributions.
 set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(third_party/sdbus-cpp EXCLUDE_FROM_ALL)
 
 # ── CMake modules ─────────────────────────────────────────────────────────────

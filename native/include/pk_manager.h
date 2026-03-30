@@ -40,18 +40,18 @@ class PkManager {
     }
 
    private:
-    void register_manager_signals();
-    void on_updates_changed();
-    void on_repo_list_changed();
-    void on_network_state_changed(uint32_t state);
-    void on_transaction_list_changed(const std::vector<sdbus::ObjectPath>& txs);
+    void registerManagerSignals();
+    void onUpdatesChanged();
+    void onRepoListChanged();
+    void onNetworkStateChanged(uint32_t state);
+    void onTransactionListChanged(const std::vector<sdbus::ObjectPath>& txs);
 
     // Post a glaze-encoded payload to Dart with the given discriminator.
     template <typename T>
     void post(uint8_t discriminator, const T& value);
 
     // Post a single-byte event (e.g. UpdatesChanged = 0xD0, RepoListChanged = 0xD1).
-    void post_event(uint8_t event_byte);
+    void postEvent(uint8_t event_byte);
 
     std::unique_ptr<sdbus::IConnection> conn_;
     std::unique_ptr<sdbus::IProxy> manager_proxy_;

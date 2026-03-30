@@ -33,34 +33,35 @@ static constexpr uint8_t kSentinel = 0xFF;
 PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::ObjectPath object_path,
                                          Dart_Port dart_port)
     : path_(std::move(object_path)), port_(dart_port) {
-    proxy_ = sdbus::createProxy(conn, "org.freedesktop.PackageKit", path_);
+    proxy_ = sdbus::createProxy(
+        conn, sdbus::ServiceName{"org.freedesktop.PackageKit"}, path_);
 
     // Register all signal handlers before any method call.
     proxy_->uponSignal("Package")
         .onInterface(PK_TX_IFACE)
         .call([this](const uint32_t& info, const std::string& pkg_id, const std::string& summary) {
-            on_package(info, pkg_id, summary);
+            onPackage(info, pkg_id, summary);
         });
 
     proxy_->uponSignal("Progress")
         .onInterface(PK_TX_IFACE)
         .call([this](const std::string& pkg_id, const uint32_t& status, const uint32_t& pct) {
-            on_progress(pkg_id, status, pct);
+            onProgress(pkg_id, status, pct);
         });
 
     proxy_->uponSignal("ItemProgress")
         .onInterface(PK_TX_IFACE)
         .call([this](const std::string& id, const uint32_t& status, const uint32_t& pct) {
-            on_item_progress(id, status, pct);
+            onItemProgress(id, status, pct);
         });
 
     proxy_->uponSignal("StatusChanged")
         .onInterface(PK_TX_IFACE)
-        .call([this](const uint32_t& status) { on_status_changed(status); });
+        .call([this](const uint32_t& status) { onStatusChanged(status); });
 
     proxy_->uponSignal("Details")
         .onInterface(PK_TX_IFACE)
-        .call([this](const std::map<std::string, sdbus::Variant>& data) { on_details(data); });
+        .call([this](const std::map<std::string, sdbus::Variant>& data) { onDetails(data); });
 
     proxy_->uponSignal("UpdateDetail")
         .onInterface(PK_TX_IFACE)
@@ -71,14 +72,14 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
                      const std::vector<std::string>& cve_urls, const uint32_t& restart,
                      const std::string& update_text, const std::string& changelog,
                      const uint32_t& state, const std::string& issued, const std::string& updated) {
-            on_update_detail(pkg_id, updates, obsoletes, vendor_urls, bugzilla_urls, cve_urls,
+            onUpdateDetail(pkg_id, updates, obsoletes, vendor_urls, bugzilla_urls, cve_urls,
                              restart, update_text, changelog, state, issued, updated);
         });
 
     proxy_->uponSignal("RepoDetail")
         .onInterface(PK_TX_IFACE)
         .call([this](const std::string& repo_id, const std::string& desc, const bool& enabled) {
-            on_repo_detail(repo_id, desc, enabled);
+            onRepoDetail(repo_id, desc, enabled);
         });
 
     proxy_->uponSignal("RepoSignatureRequired")
@@ -87,7 +88,7 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
                      const std::string& key_url, const std::string& key_userid,
                      const std::string& key_id, const std::string& fingerprint,
                      const std::string& timestamp, const uint32_t& type) {
-            on_repo_signature_required(pkg_id, repo_name, key_url, key_userid, key_id, fingerprint,
+            onRepoSignatureRequired(pkg_id, repo_name, key_url, key_userid, key_id, fingerprint,
                                        timestamp, type);
         });
 
@@ -95,42 +96,41 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
         .onInterface(PK_TX_IFACE)
         .call([this](const std::string& eula_id, const std::string& pkg_id,
                      const std::string& vendor, const std::string& license) {
-            on_eula_required(eula_id, pkg_id, vendor, license);
+            onEulaRequired(eula_id, pkg_id, vendor, license);
         });
 
     proxy_->uponSignal("Files")
         .onInterface(PK_TX_IFACE)
         .call([this](const std::string& pkg_id, const std::vector<std::string>& files) {
-            on_files(pkg_id, files);
+            onFiles(pkg_id, files);
         });
 
     proxy_->uponSignal("ErrorCode")
         .onInterface(PK_TX_IFACE)
         .call([this](const uint32_t& code, const std::string& details) {
-            on_error_code(code, details);
+            onErrorCode(code, details);
         });
 
     proxy_->uponSignal("RequireRestart")
         .onInterface(PK_TX_IFACE)
         .call([this](const uint32_t& type, const std::string& pkg_id) {
-            on_require_restart(type, pkg_id);
+            onRequireRestart(type, pkg_id);
         });
 
     proxy_->uponSignal("Message")
         .onInterface(PK_TX_IFACE)
         .call([this](const uint32_t& type, const std::string& details) {
-            on_message(type, details);
+            onMessage(type, details);
         });
 
     proxy_->uponSignal("Finished")
         .onInterface(PK_TX_IFACE)
         .call([this](const uint32_t& exit_code, const uint32_t& runtime) {
-            on_finished(exit_code, runtime);
+            onFinished(exit_code, runtime);
         });
 
-    proxy_->uponSignal("Destroy").onInterface(PK_TX_IFACE).call([this]() { on_destroy(); });
+    proxy_->uponSignal("Destroy").onInterface(PK_TX_IFACE).call([this]() { onDestroy(); });
 
-    proxy_->finishRegistration();
 }
 
 PkTransactionBridge::~PkTransactionBridge() = default;
@@ -256,13 +256,13 @@ void PkTransactionBridge::cancel() {
 
 // ── Signal handlers ──────────────────────────────────────────────────────────
 
-void PkTransactionBridge::on_package(uint32_t info, const std::string& pkg_id,
+void PkTransactionBridge::onPackage(uint32_t info, const std::string& pkg_id,
                                      const std::string& summary) {
     PkPackage p{.info = info, .packageId = pkg_id, .summary = summary};
     post(kPackage, p);
 }
 
-void PkTransactionBridge::on_progress(const std::string& pkg_id, uint32_t status, uint32_t pct) {
+void PkTransactionBridge::onProgress(const std::string& pkg_id, uint32_t status, uint32_t pct) {
     PkProgress p{
         .packageId = pkg_id,
         .status = status,
@@ -272,7 +272,7 @@ void PkTransactionBridge::on_progress(const std::string& pkg_id, uint32_t status
     post(kProgress, p);
 }
 
-void PkTransactionBridge::on_item_progress(const std::string& id, uint32_t status, uint32_t pct) {
+void PkTransactionBridge::onItemProgress(const std::string& id, uint32_t status, uint32_t pct) {
     PkProgress p{
         .packageId = id,
         .status = status,
@@ -282,7 +282,7 @@ void PkTransactionBridge::on_item_progress(const std::string& id, uint32_t statu
     post(kProgress, p);
 }
 
-void PkTransactionBridge::on_status_changed(uint32_t status) {
+void PkTransactionBridge::onStatusChanged(uint32_t status) {
     PkProgress p{
         .packageId = "",
         .status = status,
@@ -292,7 +292,7 @@ void PkTransactionBridge::on_status_changed(uint32_t status) {
     post(kProgress, p);
 }
 
-void PkTransactionBridge::on_details(const std::map<std::string, sdbus::Variant>& data) {
+void PkTransactionBridge::onDetails(const std::map<std::string, sdbus::Variant>& data) {
     // Details signal uses a{sv} — extract known keys into PkDetails.
     PkDetails d{};
     auto get_str = [&](const char* key) -> std::string {
@@ -321,7 +321,7 @@ void PkTransactionBridge::on_details(const std::map<std::string, sdbus::Variant>
     post(kDetails, d);
 }
 
-void PkTransactionBridge::on_update_detail(
+void PkTransactionBridge::onUpdateDetail(
     const std::string& pkg_id, const std::vector<std::string>& updates,
     const std::vector<std::string>& obsoletes, const std::vector<std::string>& vendor_urls,
     const std::vector<std::string>& bugzilla_urls, const std::vector<std::string>& cve_urls,
@@ -344,13 +344,13 @@ void PkTransactionBridge::on_update_detail(
     post(kUpdateDetail, ud);
 }
 
-void PkTransactionBridge::on_repo_detail(const std::string& repo_id, const std::string& desc,
+void PkTransactionBridge::onRepoDetail(const std::string& repo_id, const std::string& desc,
                                          bool enabled) {
     PkRepoDetail rd{.repoId = repo_id, .description = desc, .enabled = enabled};
     post(kRepoDetail, rd);
 }
 
-void PkTransactionBridge::on_repo_signature_required(
+void PkTransactionBridge::onRepoSignatureRequired(
     const std::string& pkg_id, const std::string& repo_name, const std::string& key_url,
     const std::string& key_userid, const std::string& key_id, const std::string& fingerprint,
     const std::string& timestamp, uint32_t type) {
@@ -367,7 +367,7 @@ void PkTransactionBridge::on_repo_signature_required(
     post(kRepoSigReq, rs);
 }
 
-void PkTransactionBridge::on_eula_required(const std::string& eula_id, const std::string& pkg_id,
+void PkTransactionBridge::onEulaRequired(const std::string& eula_id, const std::string& pkg_id,
                                            const std::string& vendor, const std::string& license) {
     PkEulaRequired e{
         .eulaId = eula_id,
@@ -378,32 +378,32 @@ void PkTransactionBridge::on_eula_required(const std::string& eula_id, const std
     post(kEulaRequired, e);
 }
 
-void PkTransactionBridge::on_files(const std::string& pkg_id,
+void PkTransactionBridge::onFiles(const std::string& pkg_id,
                                    const std::vector<std::string>& files) {
     PkFiles f{.packageId = pkg_id, .files = files};
     post(kFiles, f);
 }
 
-void PkTransactionBridge::on_error_code(uint32_t code, const std::string& details) {
+void PkTransactionBridge::onErrorCode(uint32_t code, const std::string& details) {
     PkErrorCode ec{.code = code, .details = details};
     post(kErrorCode, ec);
 }
 
-void PkTransactionBridge::on_require_restart(uint32_t type, const std::string& pkg_id) {
+void PkTransactionBridge::onRequireRestart(uint32_t type, const std::string& pkg_id) {
     PkRequireRestart rr{.type = type, .packageId = pkg_id};
     post(kRequireRestart, rr);
 }
 
-void PkTransactionBridge::on_message(uint32_t type, const std::string& details) {
+void PkTransactionBridge::onMessage(uint32_t type, const std::string& details) {
     PkMessage m{.type = type, .details = details};
     post(kMessage, m);
 }
 
-void PkTransactionBridge::on_finished(uint32_t exit_code, uint32_t runtime_ms) {
-    post_finished(exit_code, runtime_ms);
+void PkTransactionBridge::onFinished(uint32_t exit_code, uint32_t runtime_ms) {
+    postFinished(exit_code, runtime_ms);
 }
 
-void PkTransactionBridge::on_destroy() {
+void PkTransactionBridge::onDestroy() {
     // Transaction object self-destructs on the daemon side.
     // The Dart layer will drop the bridge after receiving the sentinel.
 }
@@ -427,7 +427,7 @@ void PkTransactionBridge::post(uint8_t discriminator, const T& value) {
     Dart_PostCObject_DL(port_, &obj);
 }
 
-void PkTransactionBridge::post_finished(uint32_t exit_code, uint32_t runtime_ms) {
+void PkTransactionBridge::postFinished(uint32_t exit_code, uint32_t runtime_ms) {
     // Post 0x20 Finished marker with exit code and runtime.
     std::vector<uint8_t> buf;
     buf.push_back(kFinished);

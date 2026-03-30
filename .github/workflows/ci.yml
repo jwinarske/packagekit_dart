@@ -59,10 +59,110 @@ jobs:
       - uses: dart-lang/setup-dart@v1
         with: { sdk: stable }
       - run: dart pub get
-      - name: Dart tests (mock bridge)
+      - name: Dart tests
         env:
           PK_NC_LIB: ${{ github.workspace }}/build/libpackagekit_nc.so
         run: dart test --reporter=expanded
+
+  # ── Ubuntu 24.04 arm64 ───────────────────────────────────────────────────
+  build-ubuntu-arm64:
+    name: Ubuntu 24.04 / arm64
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+        with: { submodules: recursive }
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build pkg-config clang-19 \
+            libsystemd-dev libgtest-dev
+      - uses: dart-lang/setup-dart@v1
+        with: { sdk: stable }
+      - run: dart pub get
+      - name: Build + test
+        run: |
+          cmake -B build native/ -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_COMPILER=clang++-19 \
+            -DCMAKE_C_COMPILER=clang-19 \
+            -DBUILD_TESTING=ON
+          cmake --build build --parallel
+          ctest --test-dir build/test --output-on-failure -j4
+      - name: Dart tests
+        env:
+          PK_NC_LIB: ${{ github.workspace }}/build/libpackagekit_nc.so
+        run: dart test
+
+  # ── Fedora 41 x86_64 (container) ─────────────────────────────────────────
+  build-fedora-x64:
+    name: Fedora 41 / x86_64
+    runs-on: ubuntu-24.04
+    container: { image: fedora:41 }
+    steps:
+      - name: Install deps
+        run: |
+          dnf install -y \
+            git cmake ninja-build \
+            clang clang-tools-extra \
+            systemd-devel \
+            gtest-devel lcov unzip curl
+      - uses: actions/checkout@v6
+        with: { submodules: recursive }
+      - name: Install Dart SDK
+        run: |
+          curl -fsSL \
+            "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-linux-x64-release.zip" \
+            -o dart-sdk.zip
+          unzip -q dart-sdk.zip
+          echo "$PWD/dart-sdk/bin" >> "$GITHUB_PATH"
+      - run: dart pub get
+      - name: Build + test
+        run: |
+          cmake -B build native/ -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON
+          cmake --build build --parallel
+          ctest --test-dir build/test --output-on-failure -j4
+      - name: Dart tests
+        env:
+          PK_NC_LIB: ${{ github.workspace }}/build/libpackagekit_nc.so
+        run: dart test
+
+  # ── Fedora 41 arm64 (container on arm runner) ─────────────────────────────
+  build-fedora-arm64:
+    name: Fedora 41 / arm64
+    runs-on: ubuntu-24.04-arm
+    container: { image: fedora:41 }
+    steps:
+      - name: Install deps
+        run: |
+          dnf install -y \
+            git cmake ninja-build \
+            clang clang-tools-extra \
+            systemd-devel \
+            gtest-devel unzip curl
+      - uses: actions/checkout@v6
+        with: { submodules: recursive }
+      - name: Install Dart SDK (arm64)
+        run: |
+          curl -fsSL \
+            "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-linux-arm64-release.zip" \
+            -o dart-sdk.zip
+          unzip -q dart-sdk.zip
+          echo "$PWD/dart-sdk/bin" >> "$GITHUB_PATH"
+      - run: dart pub get
+      - name: Build + test
+        run: |
+          cmake -B build native/ -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON
+          cmake --build build --parallel
+          ctest --test-dir build/test --output-on-failure -j4
+      - name: Dart tests
+        env:
+          PK_NC_LIB: ${{ github.workspace }}/build/libpackagekit_nc.so
+        run: dart test
 
   # ── ASAN + UBSan ─────────────────────────────────────────────────────────
   asan:
@@ -130,7 +230,8 @@ jobs:
           ctest --test-dir build-cov/test --output-on-failure -j4
           lcov --capture --directory build-cov \
             --output-file build-cov/coverage.info \
-            --ignore-errors mismatch
+            --ignore-errors mismatch,empty
           lcov --remove build-cov/coverage.info \
             '*/third_party/*' '*/test/*' '/usr/*' \
-            --output-file build-cov/coverage.info
+            --output-file build-cov/coverage.info \
+            --ignore-errors empty

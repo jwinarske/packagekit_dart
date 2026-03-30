@@ -24,9 +24,10 @@ static constexpr uint8_t kNetworkStateChanged = 0xD2;
 PkManager::PkManager(Dart_Port events_port) : events_port_(events_port) {
     conn_ = sdbus::createSystemBusConnection();
 
-    manager_proxy_ = sdbus::createProxy(*conn_, PK_SERVICE, sdbus::ObjectPath{PK_PATH});
+    manager_proxy_ = sdbus::createProxy(
+        *conn_, sdbus::ServiceName{PK_SERVICE}, sdbus::ObjectPath{PK_PATH});
 
-    register_manager_signals();
+    registerManagerSignals();
 
     // Start the event loop on a dedicated thread.
     event_thread_ = std::thread([this]() { conn_->enterEventLoop(); });
@@ -41,26 +42,25 @@ PkManager::~PkManager() {
     }
 }
 
-void PkManager::register_manager_signals() {
+void PkManager::registerManagerSignals() {
     manager_proxy_->uponSignal("UpdatesChanged").onInterface(PK_IFACE).call([this]() {
-        on_updates_changed();
+        onUpdatesChanged();
     });
 
     manager_proxy_->uponSignal("RepoListChanged").onInterface(PK_IFACE).call([this]() {
-        on_repo_list_changed();
+        onRepoListChanged();
     });
 
     manager_proxy_->uponSignal("NetworkStateChanged")
         .onInterface(PK_IFACE)
-        .call([this](const uint32_t& state) { on_network_state_changed(state); });
+        .call([this](const uint32_t& state) { onNetworkStateChanged(state); });
 
     manager_proxy_->uponSignal("TransactionListChanged")
         .onInterface(PK_IFACE)
         .call([this](const std::vector<sdbus::ObjectPath>& txs) {
-            on_transaction_list_changed(txs);
+            onTransactionListChanged(txs);
         });
 
-    manager_proxy_->finishRegistration();
 }
 
 void PkManager::readProperties() {
@@ -106,15 +106,15 @@ PkTransactionBridge* PkManager::createTransactionBridge(Dart_Port tx_port) {
 
 // ── Signal handlers ──────────────────────────────────────────────────────────
 
-void PkManager::on_updates_changed() {
-    post_event(kUpdatesChanged);
+void PkManager::onUpdatesChanged() {
+    postEvent(kUpdatesChanged);
 }
 
-void PkManager::on_repo_list_changed() {
-    post_event(kRepoListChanged);
+void PkManager::onRepoListChanged() {
+    postEvent(kRepoListChanged);
 }
 
-void PkManager::on_network_state_changed(uint32_t state) {
+void PkManager::onNetworkStateChanged(uint32_t state) {
     // Encode as a single-byte discriminator + uint32 payload.
     std::vector<uint8_t> buf;
     buf.push_back(kNetworkStateChanged);
@@ -128,7 +128,7 @@ void PkManager::on_network_state_changed(uint32_t state) {
     Dart_PostCObject_DL(events_port_, &obj);
 }
 
-void PkManager::on_transaction_list_changed(const std::vector<sdbus::ObjectPath>& /*txs*/) {
+void PkManager::onTransactionListChanged(const std::vector<sdbus::ObjectPath>& /*txs*/) {
     // Transaction list changes are informational; not forwarded to Dart.
     // The Dart layer tracks transactions it created.
 }
@@ -152,7 +152,7 @@ void PkManager::post(uint8_t discriminator, const T& value) {
     Dart_PostCObject_DL(events_port_, &obj);
 }
 
-void PkManager::post_event(uint8_t event_byte) {
+void PkManager::postEvent(uint8_t event_byte) {
     Dart_CObject obj;
     obj.type = Dart_CObject_kTypedData;
     obj.value.as_typed_data.type = Dart_TypedData_kUint8;

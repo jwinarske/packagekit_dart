@@ -71,38 +71,38 @@ class PkTransactionBridge {
 
    private:
     // Signal handlers — all called on the sdbus event loop thread.
-    void on_package(uint32_t info, const std::string& pkg_id, const std::string& summary);
-    void on_progress(const std::string& pkg_id, uint32_t status, uint32_t pct);
-    void on_item_progress(const std::string& id, uint32_t status, uint32_t pct);
-    void on_status_changed(uint32_t status);
-    void on_details(const std::map<std::string, sdbus::Variant>& data);
-    void on_update_detail(const std::string& pkg_id, const std::vector<std::string>& updates,
+    void onPackage(uint32_t info, const std::string& pkg_id, const std::string& summary);
+    void onProgress(const std::string& pkg_id, uint32_t status, uint32_t pct);
+    void onItemProgress(const std::string& id, uint32_t status, uint32_t pct);
+    void onStatusChanged(uint32_t status);
+    void onDetails(const std::map<std::string, sdbus::Variant>& data);
+    void onUpdateDetail(const std::string& pkg_id, const std::vector<std::string>& updates,
                           const std::vector<std::string>& obsoletes,
                           const std::vector<std::string>& vendor_urls,
                           const std::vector<std::string>& bugzilla_urls,
                           const std::vector<std::string>& cve_urls, uint32_t restart,
                           const std::string& update_text, const std::string& changelog,
                           uint32_t state, const std::string& issued, const std::string& updated);
-    void on_repo_detail(const std::string& repo_id, const std::string& desc, bool enabled);
-    void on_repo_signature_required(const std::string& pkg_id, const std::string& repo_name,
+    void onRepoDetail(const std::string& repo_id, const std::string& desc, bool enabled);
+    void onRepoSignatureRequired(const std::string& pkg_id, const std::string& repo_name,
                                     const std::string& key_url, const std::string& key_userid,
                                     const std::string& key_id, const std::string& fingerprint,
                                     const std::string& timestamp, uint32_t type);
-    void on_eula_required(const std::string& eula_id, const std::string& pkg_id,
+    void onEulaRequired(const std::string& eula_id, const std::string& pkg_id,
                           const std::string& vendor, const std::string& license);
-    void on_files(const std::string& pkg_id, const std::vector<std::string>& files);
-    void on_error_code(uint32_t code, const std::string& details);
-    void on_require_restart(uint32_t type, const std::string& pkg_id);
-    void on_message(uint32_t type, const std::string& details);
-    void on_finished(uint32_t exit_code, uint32_t runtime_ms);
-    void on_destroy();
+    void onFiles(const std::string& pkg_id, const std::vector<std::string>& files);
+    void onErrorCode(uint32_t code, const std::string& details);
+    void onRequireRestart(uint32_t type, const std::string& pkg_id);
+    void onMessage(uint32_t type, const std::string& details);
+    void onFinished(uint32_t exit_code, uint32_t runtime_ms);
+    void onDestroy();
 
     // Post a glaze-encoded payload to Dart with the given discriminator.
     template <typename T>
     void post(uint8_t discriminator, const T& value);
 
     // Post the 0x20 Finished marker, then 0xFF sentinel.
-    void post_finished(uint32_t exit_code, uint32_t runtime_ms);
+    void postFinished(uint32_t exit_code, uint32_t runtime_ms);
 
     sdbus::ObjectPath path_;
     Dart_Port port_;
