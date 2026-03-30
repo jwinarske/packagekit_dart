@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node>
+  <interface name="org.freedesktop.PackageKit.Offline">
+
+    <!-- Returns results of the last offline action -->
+    <method name="GetResults">
+      <arg name="success"           type="b"  direction="out"/>
+      <arg name="package_ids"       type="as" direction="out"/>
+      <arg name="role"              type="u"  direction="out"/>
+      <arg name="time_finished"     type="t"  direction="out"/>
+      <arg name="error_code"        type="u"  direction="out"/>
+      <arg name="error_description" type="s"  direction="out"/>
+    </method>
+
+    <!-- Clears the offline update results store -->
+    <method name="ClearResults"/>
+
+    <!-- Triggers offline update for next boot (action: "power-off" or "reboot") -->
+    <method name="Trigger">
+      <arg name="action" type="s" direction="in"/>
+    </method>
+
+    <!-- Triggers offline system upgrade for next boot -->
+    <method name="TriggerUpgrade">
+      <arg name="action" type="s" direction="in"/>
+    </method>
+
+    <!-- Cancels the offline update so next boot proceeds normally -->
+    <method name="Cancel"/>
+
+    <!-- Returns the list of prepared update package IDs -->
+    <method name="GetPrepared">
+      <arg name="package_ids" type="as" direction="out"/>
+    </method>
+
+    <property name="UpdatePrepared"   type="b"    access="read"/>
+    <property name="UpdateTriggered"  type="b"    access="read"/>
+    <property name="UpgradePrepared"  type="b"    access="read"/>
+    <property name="UpgradeTriggered" type="b"    access="read"/>
+    <property name="PreparedUpgrade"  type="a{sv}" access="read"/>
+    <property name="TriggerAction"    type="s"    access="read"/>
+
+  </interface>
+</node>

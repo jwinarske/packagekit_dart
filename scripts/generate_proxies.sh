@@ -24,6 +24,10 @@ echo "Generating PackageKit transaction proxy..."
 "$TOOLS" "$XML/org.freedesktop.PackageKit.Transaction.xml" \
     --proxy="$OUT/pk_transaction_proxy.h"
 
+echo "Generating PackageKit offline proxy..."
+"$TOOLS" "$XML/org.freedesktop.PackageKit.Offline.xml" \
+    --proxy="$OUT/pk_offline_proxy.h"
+
 echo "Done → $OUT/"
 echo ""
 echo "If you changed sdbus-cpp version, check for API differences in the"
