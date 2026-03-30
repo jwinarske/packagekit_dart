@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node>
+  <interface name="org.freedesktop.PackageKit.Transaction">
+
+    <!-- Must be called first before any other method. -->
+    <method name="SetHints">
+      <arg name="hints" type="as" direction="in"/>
+    </method>
+
+    <method name="Cancel"/>
+
+    <!-- ── Query methods ─────────────────────────────────────────── -->
+
+    <method name="SearchName">
+      <arg name="filter"  type="t" direction="in"/>
+      <arg name="values"  type="as" direction="in"/>
+    </method>
+
+    <method name="SearchDetails">
+      <arg name="filter"  type="t" direction="in"/>
+      <arg name="values"  type="as" direction="in"/>
+    </method>
+
+    <method name="SearchFiles">
+      <arg name="filter"  type="t" direction="in"/>
+      <arg name="values"  type="as" direction="in"/>
+    </method>
+
+    <method name="SearchGroups">
+      <arg name="filter"  type="t" direction="in"/>
+      <arg name="values"  type="as" direction="in"/>
+    </method>
+
+    <method name="GetPackages">
+      <arg name="filter"  type="t" direction="in"/>
+    </method>
+
+    <method name="GetUpdates">
+      <arg name="filter"  type="t" direction="in"/>
+    </method>
+
+    <method name="Resolve">
+      <arg name="filter"       type="t"  direction="in"/>
+      <arg name="package_ids"  type="as" direction="in"/>
+    </method>
+
+    <method name="GetDetails">
+      <arg name="package_ids"  type="as" direction="in"/>
+    </method>
+
+    <method name="GetUpdateDetail">
+      <arg name="package_ids"  type="as" direction="in"/>
+    </method>
+
+    <method name="GetFiles">
+      <arg name="package_ids"  type="as" direction="in"/>
+    </method>
+
+    <method name="GetRepoList">
+      <arg name="filter"  type="t" direction="in"/>
+    </method>
+
+    <method name="DependsOn">
+      <arg name="filter"       type="t"  direction="in"/>
+      <arg name="package_ids"  type="as" direction="in"/>
+      <arg name="recursive"    type="b"  direction="in"/>
+    </method>
+
+    <method name="RequiredBy">
+      <arg name="filter"       type="t"  direction="in"/>
+      <arg name="package_ids"  type="as" direction="in"/>
+      <arg name="recursive"    type="b"  direction="in"/>
+    </method>
+
+    <method name="GetDistroUpgrades"/>
+
+    <method name="GetOldTransactions">
+      <arg name="number" type="u" direction="in"/>
+    </method>
+
+    <!-- ── Write methods (require polkit via packagekitd) ────────── -->
+
+    <method name="InstallPackages">
+      <arg name="transaction_flags" type="t"  direction="in"/>
+      <arg name="package_ids"       type="as" direction="in"/>
+    </method>
+
+    <method name="RemovePackages">
+      <arg name="transaction_flags" type="t"  direction="in"/>
+      <arg name="package_ids"       type="as" direction="in"/>
+      <arg name="allow_deps"        type="b"  direction="in"/>
+      <arg name="autoremove"        type="b"  direction="in"/>
+    </method>
+
+    <method name="UpdatePackages">
+      <arg name="transaction_flags" type="t"  direction="in"/>
+      <arg name="package_ids"       type="as" direction="in"/>
+    </method>
+
+    <method name="RefreshCache">
+      <arg name="force" type="b" direction="in"/>
+    </method>
+
+    <method name="DownloadPackages">
+      <arg name="store_in_cache" type="b"  direction="in"/>
+      <arg name="package_ids"    type="as" direction="in"/>
+    </method>
+
+    <method name="InstallFiles">
+      <arg name="transaction_flags" type="t"  direction="in"/>
+      <arg name="full_paths"        type="as" direction="in"/>
+    </method>
+
+    <method name="RepoEnable">
+      <arg name="repo_id" type="s" direction="in"/>
+      <arg name="enabled" type="b" direction="in"/>
+    </method>
+
+    <method name="RepoSetData">
+      <arg name="repo_id"   type="s" direction="in"/>
+      <arg name="parameter" type="s" direction="in"/>
+      <arg name="value"     type="s" direction="in"/>
+    </method>
+
+    <method name="AcceptEula">
+      <arg name="eula_id" type="s" direction="in"/>
+    </method>
+
+    <method name="InstallSignature">
+      <arg name="sig_type"   type="u" direction="in"/>
+      <arg name="key_id"     type="s" direction="in"/>
+      <arg name="package_id" type="s" direction="in"/>
+    </method>
+
+    <!-- ── Signals ──────────────────────────────────────────────── -->
+
+    <!-- Primary result signal for most query methods -->
+    <signal name="Package">
+      <arg name="info"       type="u"/>
+      <arg name="package_id" type="s"/>
+      <arg name="summary"    type="s"/>
+    </signal>
+
+    <!-- Batch version (requires supports-plural-signals hint) -->
+    <signal name="Packages">
+      <arg name="package_ids" type="a(uss)"/>
+    </signal>
+
+    <!-- Overall transaction progress -->
+    <signal name="Progress">
+      <arg name="package_id"   type="s"/>
+      <arg name="status"       type="u"/>
+      <arg name="percentage"   type="u"/>
+    </signal>
+
+    <!-- Per-item progress within a multi-package transaction -->
+    <signal name="ItemProgress">
+      <arg name="id"         type="s"/>
+      <arg name="status"     type="u"/>
+      <arg name="percentage" type="u"/>
+    </signal>
+
+    <signal name="StatusChanged">
+      <arg name="status" type="u"/>
+    </signal>
+
+    <signal name="Details">
+      <arg name="data" type="a{sv}"/>
+    </signal>
+
+    <signal name="UpdateDetail">
+      <arg name="package_id"   type="s"/>
+      <arg name="updates"      type="as"/>
+      <arg name="obsoletes"    type="as"/>
+      <arg name="vendor_urls"  type="as"/>
+      <arg name="bugzilla_urls" type="as"/>
+      <arg name="cve_urls"     type="as"/>
+      <arg name="restart"      type="u"/>
+      <arg name="update_text"  type="s"/>
+      <arg name="changelog"    type="s"/>
+      <arg name="state"        type="u"/>
+      <arg name="issued"       type="s"/>
+      <arg name="updated"      type="s"/>
+    </signal>
+
+    <signal name="RepoDetail">
+      <arg name="repo_id"     type="s"/>
+      <arg name="description" type="s"/>
+      <arg name="enabled"     type="b"/>
+    </signal>
+
+    <signal name="RepoSignatureRequired">
+      <arg name="package_id"      type="s"/>
+      <arg name="repository_name" type="s"/>
+      <arg name="key_url"         type="s"/>
+      <arg name="key_userid"      type="s"/>
+      <arg name="key_id"          type="s"/>
+      <arg name="key_fingerprint" type="s"/>
+      <arg name="key_timestamp"   type="s"/>
+      <arg name="type"            type="u"/>
+    </signal>
+
+    <signal name="EulaRequired">
+      <arg name="eula_id"      type="s"/>
+      <arg name="package_id"   type="s"/>
+      <arg name="vendor_name"  type="s"/>
+      <arg name="license_agreement" type="s"/>
+    </signal>
+
+    <signal name="Files">
+      <arg name="package_id" type="s"/>
+      <arg name="file_list"  type="as"/>
+    </signal>
+
+    <signal name="ErrorCode">
+      <arg name="code"    type="u"/>
+      <arg name="details" type="s"/>
+    </signal>
+
+    <signal name="RequireRestart">
+      <arg name="type"       type="u"/>
+      <arg name="package_id" type="s"/>
+    </signal>
+
+    <signal name="Message">
+      <arg name="type"    type="u"/>
+      <arg name="details" type="s"/>
+    </signal>
+
+    <!-- Fired exactly once when the transaction completes or fails -->
+    <signal name="Finished">
+      <arg name="exit"          type="u"/>
+      <arg name="runtime"       type="u"/>
+    </signal>
+
+    <!-- Transaction object self-destructs; proxy must be dropped -->
+    <signal name="Destroy"/>
+
+    <property name="TransactionId"   type="s" access="read"/>
+    <property name="Uid"             type="u" access="read"/>
+    <property name="Role"            type="u" access="read"/>
+    <property name="Status"          type="u" access="read"/>
+    <property name="LastPackage"     type="s" access="read"/>
+    <property name="Percentage"      type="u" access="read"/>
+    <property name="AllowCancel"     type="b" access="read"/>
+    <property name="CallerActive"    type="b" access="read"/>
+    <property name="ElapsedTime"     type="u" access="read"/>
+    <property name="RemainingTime"   type="u" access="read"/>
+    <property name="Speed"           type="u" access="read"/>
+    <property name="DownloadSizeRemaining" type="t" access="read"/>
+    <property name="Flags"           type="t" access="read"/>
+
+  </interface>
+</node>

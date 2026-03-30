@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node>
+  <interface name="org.freedesktop.PackageKit">
+
+    <!-- Creates a new one-shot transaction object. Returns object path. -->
+    <method name="CreateTransaction">
+      <arg name="object_path" type="o" direction="out"/>
+    </method>
+
+    <method name="GetTimeSinceAction">
+      <arg name="role" type="u" direction="in"/>
+      <arg name="seconds" type="u" direction="out"/>
+    </method>
+
+    <method name="GetDaemonState">
+      <arg name="state" type="s" direction="out"/>
+    </method>
+
+    <method name="SetProxy">
+      <arg name="proxy_http"  type="s" direction="in"/>
+      <arg name="proxy_https" type="s" direction="in"/>
+      <arg name="proxy_ftp"   type="s" direction="in"/>
+      <arg name="proxy_socks" type="s" direction="in"/>
+      <arg name="no_proxy"    type="s" direction="in"/>
+      <arg name="pac"         type="s" direction="in"/>
+    </method>
+
+    <method name="SuggestDaemonQuit"/>
+
+    <!-- Properties via org.freedesktop.DBus.Properties -->
+    <!-- BackendName (s), BackendDescription (s), BackendAuthor (s) -->
+    <!-- Roles (t), Filters (t), Groups (t), MimeTypes (as)         -->
+    <!-- DistroId (s), NetworkState (u), Locked (b)                 -->
+    <!-- VersionMajor (u), VersionMinor (u), VersionMicro (u)       -->
+
+    <property name="BackendName"        type="s"  access="read"/>
+    <property name="BackendDescription" type="s"  access="read"/>
+    <property name="BackendAuthor"      type="s"  access="read"/>
+    <property name="Roles"              type="t"  access="read"/>
+    <property name="Filters"            type="t"  access="read"/>
+    <property name="Groups"             type="t"  access="read"/>
+    <property name="MimeTypes"          type="as" access="read"/>
+    <property name="DistroId"           type="s"  access="read"/>
+    <property name="NetworkState"       type="u"  access="read"/>
+    <property name="Locked"             type="b"  access="read"/>
+    <property name="VersionMajor"       type="u"  access="read"/>
+    <property name="VersionMinor"       type="u"  access="read"/>
+    <property name="VersionMicro"       type="u"  access="read"/>
+
+    <signal name="TransactionListChanged">
+      <arg name="transactions" type="ao"/>
+    </signal>
+
+    <signal name="RestartSchedule"/>
+
+    <signal name="RepoListChanged"/>
+
+    <signal name="NetworkStateChanged">
+      <arg name="state" type="u"/>
+    </signal>
+
+    <signal name="UpdatesChanged"/>
+
+  </interface>
+</node>

@@ -21,3 +21,25 @@ jobs:
       - uses: dart-lang/setup-dart@v1
         with: { sdk: stable }
       - run: dart format --set-exit-if-changed lib/ test/
+
+  # ── Release build (Ubuntu 24.04 x86_64, no tests yet) ─────────────────────
+  build-ubuntu-x64:
+    name: Ubuntu 24.04 / x86_64
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build \
+            clang-19 \
+            libsystemd-dev
+      - name: Build (Release)
+        run: |
+          cmake -B build native/ -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_COMPILER=clang++-19 \
+            -DCMAKE_C_COMPILER=clang-19
+          cmake --build build --parallel
