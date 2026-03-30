@@ -44,7 +44,7 @@ class PkManager {
     void onUpdatesChanged();
     void onRepoListChanged();
     void onNetworkStateChanged(uint32_t state);
-    void onTransactionListChanged(const std::vector<sdbus::ObjectPath>& txs);
+    void onTransactionListChanged(const std::vector<std::string>& txs);
 
     // Post a glaze-encoded payload to Dart with the given discriminator.
     template <typename T>

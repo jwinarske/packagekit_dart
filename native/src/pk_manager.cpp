@@ -57,7 +57,7 @@ void PkManager::registerManagerSignals() {
 
     manager_proxy_->uponSignal("TransactionListChanged")
         .onInterface(PK_IFACE)
-        .call([this](const std::vector<sdbus::ObjectPath>& txs) {
+        .call([this](const std::vector<std::string>& txs) {
             onTransactionListChanged(txs);
         });
 
@@ -128,7 +128,7 @@ void PkManager::onNetworkStateChanged(uint32_t state) {
     Dart_PostCObject_DL(events_port_, &obj);
 }
 
-void PkManager::onTransactionListChanged(const std::vector<sdbus::ObjectPath>& /*txs*/) {
+void PkManager::onTransactionListChanged(const std::vector<std::string>& /*txs*/) {
     // Transaction list changes are informational; not forwarded to Dart.
     // The Dart layer tracks transactions it created.
 }

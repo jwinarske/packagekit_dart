@@ -263,17 +263,17 @@ class PkClient {
   PkTransaction _startQuery(void Function(Object txHandle) invoke) {
     final port = ReceivePort('packagekit.tx');
 
-    final pkgs = StreamController<PkPackage>.broadcast();
-    final dets = StreamController<PkPackageDetail>.broadcast();
-    final updDets = StreamController<PkUpdateDetail>.broadcast();
-    final repos = StreamController<PkRepoDetail>.broadcast();
-    final fls = StreamController<PkFiles>.broadcast();
-    final prog = StreamController<PkProgress>.broadcast();
-    final msgs = StreamController<PkMessage>.broadcast();
-    final eula = StreamController<PkEulaRequired>.broadcast();
-    final sig = StreamController<PkRepoSigRequired>.broadcast();
-    final restart = StreamController<PkRequireRestart>.broadcast();
-    final errs = StreamController<PkErrorCode>.broadcast();
+    final pkgs = StreamController<PkPackage>();
+    final dets = StreamController<PkPackageDetail>();
+    final updDets = StreamController<PkUpdateDetail>();
+    final repos = StreamController<PkRepoDetail>();
+    final fls = StreamController<PkFiles>();
+    final prog = StreamController<PkProgress>();
+    final msgs = StreamController<PkMessage>();
+    final eula = StreamController<PkEulaRequired>();
+    final sig = StreamController<PkRepoSigRequired>();
+    final restart = StreamController<PkRequireRestart>();
+    final errs = StreamController<PkErrorCode>();
     final done = Completer<PkTransactionResult>();
 
     void close() {
@@ -324,18 +324,20 @@ class PkClient {
         case 0x20:
           final result = GlazeCodec.decode<PkFinished>(msg, 1);
           final exit = PkExit.fromInt(result.exitCode);
-          if (exit == PkExit.success) {
-            done.complete(
-                PkTransactionResult(exit: exit, runtimeMs: result.runtimeMs));
-          } else {
-            done.completeError(PkTransactionException(
-                'Transaction failed: ${exit.name}',
-                exit: exit,
-                runtimeMs: result.runtimeMs));
+          if (!done.isCompleted) {
+            if (exit == PkExit.success) {
+              done.complete(
+                  PkTransactionResult(exit: exit, runtimeMs: result.runtimeMs));
+            } else {
+              done.completeError(PkTransactionException(
+                  'Transaction failed: ${exit.name}',
+                  exit: exit,
+                  runtimeMs: result.runtimeMs));
+            }
           }
-          close();
         case 0xFF:
-          close();
+          // Delay close so buffered stream events drain first.
+          Future.microtask(close);
       }
     });
 

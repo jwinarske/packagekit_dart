@@ -1,254 +1,277 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <node>
   <interface name="org.freedesktop.PackageKit.Transaction">
-
-    <!-- Must be called first before any other method. -->
     <method name="SetHints">
-      <arg name="hints" type="as" direction="in"/>
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="as" name="hints" direction="in"></arg>
     </method>
-
-    <method name="Cancel"/>
-
-    <!-- ── Query methods ─────────────────────────────────────────── -->
-
-    <method name="SearchName">
-      <arg name="filter"  type="t" direction="in"/>
-      <arg name="values"  type="as" direction="in"/>
-    </method>
-
-    <method name="SearchDetails">
-      <arg name="filter"  type="t" direction="in"/>
-      <arg name="values"  type="as" direction="in"/>
-    </method>
-
-    <method name="SearchFiles">
-      <arg name="filter"  type="t" direction="in"/>
-      <arg name="values"  type="as" direction="in"/>
-    </method>
-
-    <method name="SearchGroups">
-      <arg name="filter"  type="t" direction="in"/>
-      <arg name="values"  type="as" direction="in"/>
-    </method>
-
-    <method name="GetPackages">
-      <arg name="filter"  type="t" direction="in"/>
-    </method>
-
-    <method name="GetUpdates">
-      <arg name="filter"  type="t" direction="in"/>
-    </method>
-
-    <method name="Resolve">
-      <arg name="filter"       type="t"  direction="in"/>
-      <arg name="package_ids"  type="as" direction="in"/>
-    </method>
-
-    <method name="GetDetails">
-      <arg name="package_ids"  type="as" direction="in"/>
-    </method>
-
-    <method name="GetUpdateDetail">
-      <arg name="package_ids"  type="as" direction="in"/>
-    </method>
-
-    <method name="GetFiles">
-      <arg name="package_ids"  type="as" direction="in"/>
-    </method>
-
-    <method name="GetRepoList">
-      <arg name="filter"  type="t" direction="in"/>
-    </method>
-
-    <method name="DependsOn">
-      <arg name="filter"       type="t"  direction="in"/>
-      <arg name="package_ids"  type="as" direction="in"/>
-      <arg name="recursive"    type="b"  direction="in"/>
-    </method>
-
-    <method name="RequiredBy">
-      <arg name="filter"       type="t"  direction="in"/>
-      <arg name="package_ids"  type="as" direction="in"/>
-      <arg name="recursive"    type="b"  direction="in"/>
-    </method>
-
-    <method name="GetDistroUpgrades"/>
-
-    <method name="GetOldTransactions">
-      <arg name="number" type="u" direction="in"/>
-    </method>
-
-    <!-- ── Write methods (require polkit via packagekitd) ────────── -->
-
-    <method name="InstallPackages">
-      <arg name="transaction_flags" type="t"  direction="in"/>
-      <arg name="package_ids"       type="as" direction="in"/>
-    </method>
-
-    <method name="RemovePackages">
-      <arg name="transaction_flags" type="t"  direction="in"/>
-      <arg name="package_ids"       type="as" direction="in"/>
-      <arg name="allow_deps"        type="b"  direction="in"/>
-      <arg name="autoremove"        type="b"  direction="in"/>
-    </method>
-
-    <method name="UpdatePackages">
-      <arg name="transaction_flags" type="t"  direction="in"/>
-      <arg name="package_ids"       type="as" direction="in"/>
-    </method>
-
-    <method name="RefreshCache">
-      <arg name="force" type="b" direction="in"/>
-    </method>
-
-    <method name="DownloadPackages">
-      <arg name="store_in_cache" type="b"  direction="in"/>
-      <arg name="package_ids"    type="as" direction="in"/>
-    </method>
-
-    <method name="InstallFiles">
-      <arg name="transaction_flags" type="t"  direction="in"/>
-      <arg name="full_paths"        type="as" direction="in"/>
-    </method>
-
-    <method name="RepoEnable">
-      <arg name="repo_id" type="s" direction="in"/>
-      <arg name="enabled" type="b" direction="in"/>
-    </method>
-
-    <method name="RepoSetData">
-      <arg name="repo_id"   type="s" direction="in"/>
-      <arg name="parameter" type="s" direction="in"/>
-      <arg name="value"     type="s" direction="in"/>
-    </method>
-
     <method name="AcceptEula">
-      <arg name="eula_id" type="s" direction="in"/>
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="s" name="eula_id" direction="in"></arg>
     </method>
-
+    <method name="Cancel">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+    </method>
+    <method name="DownloadPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="b" name="store_in_cache" direction="in"></arg>
+      <arg type="as" name="package_ids" direction="in"></arg>
+    </method>
+    <method name="GetCategories">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+    </method>
+    <method name="DependsOn">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+      <arg type="as" name="package_ids" direction="in"></arg>
+      <arg type="b" name="recursive" direction="in"></arg>
+    </method>
+    <method name="GetDetails">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="as" name="package_ids" direction="in"></arg>
+    </method>
+    <method name="GetDetailsLocal">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="as" name="files" direction="in"></arg>
+    </method>
+    <method name="GetFilesLocal">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="as" name="files" direction="in"></arg>
+    </method>
+    <method name="GetFiles">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="as" name="package_ids" direction="in"></arg>
+    </method>
+    <method name="GetOldTransactions">
+      <arg type="u" name="number" direction="in"></arg>
+    </method>
+    <method name="GetPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+    </method>
+    <method name="GetRepoList">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+    </method>
+    <method name="RequiredBy">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+      <arg type="as" name="package_ids" direction="in"></arg>
+      <arg type="b" name="recursive" direction="in"></arg>
+    </method>
+    <method name="GetUpdateDetail">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="as" name="package_ids" direction="in"></arg>
+    </method>
+    <method name="GetUpdates">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+    </method>
+    <method name="GetDistroUpgrades">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+    </method>
+    <method name="InstallFiles">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="transaction_flags" direction="in"></arg>
+      <arg type="as" name="full_paths" direction="in"></arg>
+    </method>
+    <method name="InstallPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="transaction_flags" direction="in"></arg>
+      <arg type="as" name="package_ids" direction="in"></arg>
+    </method>
     <method name="InstallSignature">
-      <arg name="sig_type"   type="u" direction="in"/>
-      <arg name="key_id"     type="s" direction="in"/>
-      <arg name="package_id" type="s" direction="in"/>
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="u" name="sig_type" direction="in"></arg>
+      <arg type="s" name="key_id" direction="in"></arg>
+      <arg type="s" name="package_id" direction="in"></arg>
     </method>
-
-    <!-- ── Signals ──────────────────────────────────────────────── -->
-
-    <!-- Primary result signal for most query methods -->
-    <signal name="Package">
-      <arg name="info"       type="u"/>
-      <arg name="package_id" type="s"/>
-      <arg name="summary"    type="s"/>
+    <method name="RefreshCache">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="b" name="force" direction="in"></arg>
+    </method>
+    <method name="RemovePackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="transaction_flags" direction="in"></arg>
+      <arg type="as" name="package_ids" direction="in"></arg>
+      <arg type="b" name="allow_deps" direction="in"></arg>
+      <arg type="b" name="autoremove" direction="in"></arg>
+    </method>
+    <method name="RepoEnable">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="s" name="repo_id" direction="in"></arg>
+      <arg type="b" name="enabled" direction="in"></arg>
+    </method>
+    <method name="RepoSetData">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="s" name="repo_id" direction="in"></arg>
+      <arg type="s" name="parameter" direction="in"></arg>
+      <arg type="s" name="value" direction="in"></arg>
+    </method>
+    <method name="RepoRemove">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="transaction_flags" direction="in"></arg>
+      <arg type="s" name="repo_id" direction="in"></arg>
+      <arg type="b" name="autoremove" direction="in"></arg>
+    </method>
+    <method name="Resolve">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+      <arg type="as" name="packages" direction="in"></arg>
+    </method>
+    <method name="SearchDetails">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+      <arg type="as" name="values" direction="in"></arg>
+    </method>
+    <method name="SearchFiles">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+      <arg type="as" name="values" direction="in"></arg>
+    </method>
+    <method name="SearchGroups">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+      <arg type="as" name="values" direction="in"></arg>
+    </method>
+    <method name="SearchNames">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+      <arg type="as" name="values" direction="in"></arg>
+    </method>
+    <method name="UpdatePackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="transaction_flags" direction="in"></arg>
+      <arg type="as" name="package_ids" direction="in"></arg>
+    </method>
+    <method name="WhatProvides">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="filter" direction="in"></arg>
+      <arg type="as" name="values" direction="in"></arg>
+    </method>
+    <method name="UpgradeSystem">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="transaction_flags" direction="in"></arg>
+      <arg type="s" name="distro_id" direction="in"></arg>
+      <arg type="u" name="upgrade_kind" direction="in"></arg>
+    </method>
+    <method name="RepairSystem">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""></annotation>
+      <arg type="t" name="transaction_flags" direction="in"></arg>
+    </method>
+    <signal name="Category">
+      <arg type="s" name="parent_id"></arg>
+      <arg type="s" name="cat_id"></arg>
+      <arg type="s" name="name"></arg>
+      <arg type="s" name="summary"></arg>
+      <arg type="s" name="icon"></arg>
     </signal>
-
-    <!-- Batch version (requires supports-plural-signals hint) -->
-    <signal name="Packages">
-      <arg name="package_ids" type="a(uss)"/>
-    </signal>
-
-    <!-- Overall transaction progress -->
-    <signal name="Progress">
-      <arg name="package_id"   type="s"/>
-      <arg name="status"       type="u"/>
-      <arg name="percentage"   type="u"/>
-    </signal>
-
-    <!-- Per-item progress within a multi-package transaction -->
-    <signal name="ItemProgress">
-      <arg name="id"         type="s"/>
-      <arg name="status"     type="u"/>
-      <arg name="percentage" type="u"/>
-    </signal>
-
-    <signal name="StatusChanged">
-      <arg name="status" type="u"/>
-    </signal>
-
     <signal name="Details">
-      <arg name="data" type="a{sv}"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"></annotation>
+      <arg type="a{sv}" name="data"></arg>
     </signal>
-
-    <signal name="UpdateDetail">
-      <arg name="package_id"   type="s"/>
-      <arg name="updates"      type="as"/>
-      <arg name="obsoletes"    type="as"/>
-      <arg name="vendor_urls"  type="as"/>
-      <arg name="bugzilla_urls" type="as"/>
-      <arg name="cve_urls"     type="as"/>
-      <arg name="restart"      type="u"/>
-      <arg name="update_text"  type="s"/>
-      <arg name="changelog"    type="s"/>
-      <arg name="state"        type="u"/>
-      <arg name="issued"       type="s"/>
-      <arg name="updated"      type="s"/>
-    </signal>
-
-    <signal name="RepoDetail">
-      <arg name="repo_id"     type="s"/>
-      <arg name="description" type="s"/>
-      <arg name="enabled"     type="b"/>
-    </signal>
-
-    <signal name="RepoSignatureRequired">
-      <arg name="package_id"      type="s"/>
-      <arg name="repository_name" type="s"/>
-      <arg name="key_url"         type="s"/>
-      <arg name="key_userid"      type="s"/>
-      <arg name="key_id"          type="s"/>
-      <arg name="key_fingerprint" type="s"/>
-      <arg name="key_timestamp"   type="s"/>
-      <arg name="type"            type="u"/>
-    </signal>
-
-    <signal name="EulaRequired">
-      <arg name="eula_id"      type="s"/>
-      <arg name="package_id"   type="s"/>
-      <arg name="vendor_name"  type="s"/>
-      <arg name="license_agreement" type="s"/>
-    </signal>
-
-    <signal name="Files">
-      <arg name="package_id" type="s"/>
-      <arg name="file_list"  type="as"/>
-    </signal>
-
     <signal name="ErrorCode">
-      <arg name="code"    type="u"/>
-      <arg name="details" type="s"/>
+      <arg type="u" name="code"></arg>
+      <arg type="s" name="details"></arg>
     </signal>
-
-    <signal name="RequireRestart">
-      <arg name="type"       type="u"/>
-      <arg name="package_id" type="s"/>
+    <signal name="Files">
+      <arg type="s" name="package_id"></arg>
+      <arg type="as" name="file_list"></arg>
     </signal>
-
-    <signal name="Message">
-      <arg name="type"    type="u"/>
-      <arg name="details" type="s"/>
-    </signal>
-
-    <!-- Fired exactly once when the transaction completes or fails -->
     <signal name="Finished">
-      <arg name="exit"          type="u"/>
-      <arg name="runtime"       type="u"/>
+      <arg type="u" name="exit"></arg>
+      <arg type="u" name="runtime"></arg>
     </signal>
-
-    <!-- Transaction object self-destructs; proxy must be dropped -->
-    <signal name="Destroy"/>
-
-    <property name="TransactionId"   type="s" access="read"/>
-    <property name="Uid"             type="u" access="read"/>
-    <property name="Role"            type="u" access="read"/>
-    <property name="Status"          type="u" access="read"/>
-    <property name="LastPackage"     type="s" access="read"/>
-    <property name="Percentage"      type="u" access="read"/>
-    <property name="AllowCancel"     type="b" access="read"/>
-    <property name="CallerActive"    type="b" access="read"/>
-    <property name="ElapsedTime"     type="u" access="read"/>
-    <property name="RemainingTime"   type="u" access="read"/>
-    <property name="Speed"           type="u" access="read"/>
-    <property name="DownloadSizeRemaining" type="t" access="read"/>
-    <property name="Flags"           type="t" access="read"/>
-
+    <signal name="Package">
+      <arg type="u" name="info"></arg>
+      <arg type="s" name="package_id"></arg>
+      <arg type="s" name="summary"></arg>
+    </signal>
+    <signal name="Packages">
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"></annotation>
+      <arg type="a(uss)" name="packages"></arg>
+    </signal>
+    <signal name="RepoDetail">
+      <arg type="s" name="repo_id"></arg>
+      <arg type="s" name="description"></arg>
+      <arg type="b" name="enabled"></arg>
+    </signal>
+    <signal name="RepoSignatureRequired">
+      <arg type="s" name="package_id"></arg>
+      <arg type="s" name="repository_name"></arg>
+      <arg type="s" name="key_url"></arg>
+      <arg type="s" name="key_userid"></arg>
+      <arg type="s" name="key_id"></arg>
+      <arg type="s" name="key_fingerprint"></arg>
+      <arg type="s" name="key_timestamp"></arg>
+      <arg type="u" name="type"></arg>
+    </signal>
+    <signal name="EulaRequired">
+      <arg type="s" name="eula_id"></arg>
+      <arg type="s" name="package_id"></arg>
+      <arg type="s" name="vendor_name"></arg>
+      <arg type="s" name="license_agreement"></arg>
+    </signal>
+    <signal name="MediaChangeRequired">
+      <arg type="u" name="media_type"></arg>
+      <arg type="s" name="media_id"></arg>
+      <arg type="s" name="media_text"></arg>
+    </signal>
+    <signal name="RequireRestart">
+      <arg type="u" name="type"></arg>
+      <arg type="s" name="package_id"></arg>
+    </signal>
+    <signal name="Transaction">
+      <arg type="o" name="object_path"></arg>
+      <arg type="s" name="timespec"></arg>
+      <arg type="b" name="succeeded"></arg>
+      <arg type="u" name="role"></arg>
+      <arg type="u" name="duration"></arg>
+      <arg type="s" name="data"></arg>
+      <arg type="u" name="uid"></arg>
+      <arg type="s" name="cmdline"></arg>
+    </signal>
+    <signal name="UpdateDetail">
+      <arg type="s" name="package_id"></arg>
+      <arg type="as" name="updates"></arg>
+      <arg type="as" name="obsoletes"></arg>
+      <arg type="as" name="vendor_urls"></arg>
+      <arg type="as" name="bugzilla_urls"></arg>
+      <arg type="as" name="cve_urls"></arg>
+      <arg type="u" name="restart"></arg>
+      <arg type="s" name="update_text"></arg>
+      <arg type="s" name="changelog"></arg>
+      <arg type="u" name="state"></arg>
+      <arg type="s" name="issued"></arg>
+      <arg type="s" name="updated"></arg>
+    </signal>
+    <signal name="UpdateDetails">
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"></annotation>
+      <arg type="a(sasasasasasussuss)" name="details"></arg>
+    </signal>
+    <signal name="DistroUpgrade">
+      <arg type="u" name="type"></arg>
+      <arg type="s" name="name"></arg>
+      <arg type="s" name="summary"></arg>
+    </signal>
+    <signal name="ItemProgress">
+      <arg type="s" name="id"></arg>
+      <arg type="u" name="status"></arg>
+      <arg type="u" name="percentage"></arg>
+    </signal>
+    <signal name="Destroy"></signal>
+    <property type="u" name="Role" access="read"></property>
+    <property type="u" name="Status" access="read"></property>
+    <property type="s" name="LastPackage" access="read"></property>
+    <property type="u" name="Uid" access="read"></property>
+    <property type="s" name="Sender" access="read"></property>
+    <property type="u" name="Percentage" access="read"></property>
+    <property type="b" name="AllowCancel" access="read"></property>
+    <property type="b" name="CallerActive" access="read"></property>
+    <property type="u" name="ElapsedTime" access="read"></property>
+    <property type="u" name="RemainingTime" access="read"></property>
+    <property type="u" name="Speed" access="read"></property>
+    <property type="t" name="DownloadSizeRemaining" access="read"></property>
+    <property type="t" name="TransactionFlags" access="read"></property>
   </interface>
 </node>

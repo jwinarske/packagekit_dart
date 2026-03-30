@@ -23,7 +23,7 @@ protected:
         : proxy_(&proxy) {
         proxy_->uponSignal("TransactionListChanged")
             .onInterface(INTERFACE_NAME)
-            .call([this](const std::vector<sdbus::ObjectPath>& transactions) {
+            .call([this](const std::vector<std::string>& transactions) {
                 this->onTransactionListChanged(transactions);
             });
         proxy_->uponSignal("RestartSchedule")
@@ -32,11 +32,6 @@ protected:
         proxy_->uponSignal("RepoListChanged")
             .onInterface(INTERFACE_NAME)
             .call([this]() { this->onRepoListChanged(); });
-        proxy_->uponSignal("NetworkStateChanged")
-            .onInterface(INTERFACE_NAME)
-            .call([this](const uint32_t& state) {
-                this->onNetworkStateChanged(state);
-            });
         proxy_->uponSignal("UpdatesChanged")
             .onInterface(INTERFACE_NAME)
             .call([this]() { this->onUpdatesChanged(); });
@@ -52,14 +47,22 @@ protected:
     // --- Signal handlers (override in derived class) ---
 
     virtual void onTransactionListChanged(
-        const std::vector<sdbus::ObjectPath>& transactions) = 0;
+        const std::vector<std::string>& transactions) = 0;
     virtual void onRestartSchedule() = 0;
     virtual void onRepoListChanged() = 0;
-    virtual void onNetworkStateChanged(const uint32_t& state) = 0;
     virtual void onUpdatesChanged() = 0;
 
 public:
     // --- Methods ---
+
+    uint32_t CanAuthorize(const std::string& action_id) {
+        uint32_t result;
+        proxy_->callMethod("CanAuthorize")
+            .onInterface(INTERFACE_NAME)
+            .withArguments(action_id)
+            .storeResultsTo(result);
+        return result;
+    }
 
     sdbus::ObjectPath CreateTransaction() {
         sdbus::ObjectPath result;
@@ -76,6 +79,24 @@ public:
             .withArguments(role)
             .storeResultsTo(result);
         return result;
+    }
+
+    std::vector<sdbus::ObjectPath> GetTransactionList() {
+        std::vector<sdbus::ObjectPath> result;
+        proxy_->callMethod("GetTransactionList")
+            .onInterface(INTERFACE_NAME)
+            .storeResultsTo(result);
+        return result;
+    }
+
+    void StateHasChanged(const std::string& reason) {
+        proxy_->callMethod("StateHasChanged")
+            .onInterface(INTERFACE_NAME)
+            .withArguments(reason);
+    }
+
+    void SuggestDaemonQuit() {
+        proxy_->callMethod("SuggestDaemonQuit").onInterface(INTERFACE_NAME);
     }
 
     std::string GetDaemonState() {
@@ -98,11 +119,25 @@ public:
                            no_proxy, pac);
     }
 
-    void SuggestDaemonQuit() {
-        proxy_->callMethod("SuggestDaemonQuit").onInterface(INTERFACE_NAME);
+    // --- Properties ---
+
+    uint32_t VersionMajor() {
+        return proxy_->getProperty("VersionMajor")
+            .onInterface(INTERFACE_NAME)
+            .get<uint32_t>();
     }
 
-    // --- Properties ---
+    uint32_t VersionMinor() {
+        return proxy_->getProperty("VersionMinor")
+            .onInterface(INTERFACE_NAME)
+            .get<uint32_t>();
+    }
+
+    uint32_t VersionMicro() {
+        return proxy_->getProperty("VersionMicro")
+            .onInterface(INTERFACE_NAME)
+            .get<uint32_t>();
+    }
 
     std::string BackendName() {
         return proxy_->getProperty("BackendName")
@@ -128,14 +163,14 @@ public:
             .get<uint64_t>();
     }
 
-    uint64_t Filters() {
-        return proxy_->getProperty("Filters")
+    uint64_t Groups() {
+        return proxy_->getProperty("Groups")
             .onInterface(INTERFACE_NAME)
             .get<uint64_t>();
     }
 
-    uint64_t Groups() {
-        return proxy_->getProperty("Groups")
+    uint64_t Filters() {
+        return proxy_->getProperty("Filters")
             .onInterface(INTERFACE_NAME)
             .get<uint64_t>();
     }
@@ -146,10 +181,10 @@ public:
             .get<std::vector<std::string>>();
     }
 
-    std::string DistroId() {
-        return proxy_->getProperty("DistroId")
+    bool Locked() {
+        return proxy_->getProperty("Locked")
             .onInterface(INTERFACE_NAME)
-            .get<std::string>();
+            .get<bool>();
     }
 
     uint32_t NetworkState() {
@@ -158,28 +193,10 @@ public:
             .get<uint32_t>();
     }
 
-    bool Locked() {
-        return proxy_->getProperty("Locked")
+    std::string DistroId() {
+        return proxy_->getProperty("DistroId")
             .onInterface(INTERFACE_NAME)
-            .get<bool>();
-    }
-
-    uint32_t VersionMajor() {
-        return proxy_->getProperty("VersionMajor")
-            .onInterface(INTERFACE_NAME)
-            .get<uint32_t>();
-    }
-
-    uint32_t VersionMinor() {
-        return proxy_->getProperty("VersionMinor")
-            .onInterface(INTERFACE_NAME)
-            .get<uint32_t>();
-    }
-
-    uint32_t VersionMicro() {
-        return proxy_->getProperty("VersionMicro")
-            .onInterface(INTERFACE_NAME)
-            .get<uint32_t>();
+            .get<std::string>();
     }
 
 private:

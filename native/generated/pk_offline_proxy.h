@@ -36,25 +36,6 @@ protected:
 public:
     // --- Methods ---
 
-    struct GetResultsResult {
-        bool success;
-        std::vector<std::string> package_ids;
-        uint32_t role;
-        uint64_t time_finished;
-        uint32_t error_code;
-        std::string error_description;
-    };
-
-    GetResultsResult GetResults() {
-        GetResultsResult r;
-        proxy_->callMethod("GetResults")
-            .onInterface(INTERFACE_NAME)
-            .storeResultsTo(r.success, r.package_ids, r.role,
-                            r.time_finished, r.error_code,
-                            r.error_description);
-        return r;
-    }
-
     void ClearResults() {
         proxy_->callMethod("ClearResults").onInterface(INTERFACE_NAME);
     }

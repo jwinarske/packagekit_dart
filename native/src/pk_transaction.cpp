@@ -43,6 +43,16 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
             onPackage(info, pkg_id, summary);
         });
 
+    // Batch variant (emitted when supports-plural-signals hint is set).
+    proxy_->uponSignal("Packages")
+        .onInterface(PK_TX_IFACE)
+        .call([this](
+                  const std::vector<sdbus::Struct<uint32_t, std::string, std::string>>& packages) {
+            for (const auto& p : packages) {
+                onPackage(std::get<0>(p), std::get<1>(p), std::get<2>(p));
+            }
+        });
+
     proxy_->uponSignal("Progress")
         .onInterface(PK_TX_IFACE)
         .call([this](const std::string& pkg_id, const uint32_t& status, const uint32_t& pct) {
@@ -149,7 +159,7 @@ void PkTransactionBridge::setHints(const std::string& locale) {
 // ── Query methods ────────────────────────────────────────────────────────────
 
 void PkTransactionBridge::searchName(uint64_t filter, const std::vector<std::string>& values) {
-    proxy_->callMethod("SearchName").onInterface(PK_TX_IFACE).withArguments(filter, values);
+    proxy_->callMethod("SearchNames").onInterface(PK_TX_IFACE).withArguments(filter, values);
 }
 
 void PkTransactionBridge::searchDetails(uint64_t filter, const std::vector<std::string>& values) {

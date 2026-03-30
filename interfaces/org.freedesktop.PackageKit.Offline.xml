@@ -1,44 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <node>
   <interface name="org.freedesktop.PackageKit.Offline">
-
-    <!-- Returns results of the last offline action -->
-    <method name="GetResults">
-      <arg name="success"           type="b"  direction="out"/>
-      <arg name="package_ids"       type="as" direction="out"/>
-      <arg name="role"              type="u"  direction="out"/>
-      <arg name="time_finished"     type="t"  direction="out"/>
-      <arg name="error_code"        type="u"  direction="out"/>
-      <arg name="error_description" type="s"  direction="out"/>
-    </method>
-
-    <!-- Clears the offline update results store -->
-    <method name="ClearResults"/>
-
-    <!-- Triggers offline update for next boot (action: "power-off" or "reboot") -->
+    <method name="ClearResults"></method>
     <method name="Trigger">
-      <arg name="action" type="s" direction="in"/>
+      <arg type="s" name="action" direction="in"></arg>
     </method>
-
-    <!-- Triggers offline system upgrade for next boot -->
     <method name="TriggerUpgrade">
-      <arg name="action" type="s" direction="in"/>
+      <arg type="s" name="action" direction="in"></arg>
     </method>
-
-    <!-- Cancels the offline update so next boot proceeds normally -->
-    <method name="Cancel"/>
-
-    <!-- Returns the list of prepared update package IDs -->
+    <method name="Cancel"></method>
     <method name="GetPrepared">
-      <arg name="package_ids" type="as" direction="out"/>
+      <arg type="as" name="package_ids" direction="out"></arg>
     </method>
-
-    <property name="UpdatePrepared"   type="b"    access="read"/>
-    <property name="UpdateTriggered"  type="b"    access="read"/>
-    <property name="UpgradePrepared"  type="b"    access="read"/>
-    <property name="UpgradeTriggered" type="b"    access="read"/>
-    <property name="PreparedUpgrade"  type="a{sv}" access="read"/>
-    <property name="TriggerAction"    type="s"    access="read"/>
-
+    <property type="b" name="UpdatePrepared" access="read"></property>
+    <property type="b" name="UpdateTriggered" access="read"></property>
+    <property type="b" name="UpgradePrepared" access="read"></property>
+    <property type="b" name="UpgradeTriggered" access="read"></property>
+    <property type="a{sv}" name="PreparedUpgrade" access="read">
+      <annotation name="org.qtproject.QtDBus.QtTypeName" value="QVariantMap"></annotation>
+    </property>
+    <property type="s" name="TriggerAction" access="read"></property>
   </interface>
 </node>
