@@ -40,13 +40,13 @@ static auto* tx(void* h) {
         }                               \
     } while (false)
 
-#define PK_TX_TRY(handle, expr)                              \
-    do {                                                     \
-        try {                                                \
-            expr;                                            \
-        } catch (const sdbus::Error& e) {                    \
-            tx(handle)->postError(e.getMessage());           \
-        }                                                    \
+#define PK_TX_TRY(handle, expr)                    \
+    do {                                           \
+        try {                                      \
+            expr;                                  \
+        } catch (const sdbus::Error& e) {          \
+            tx(handle)->postError(e.getMessage()); \
+        }                                          \
     } while (false)
 
 // ── Init ─────────────────────────────────────────────────────────────────────
@@ -163,7 +163,8 @@ void pk_install_packages(void* handle, uint64_t flags, const char* const* ids, i
 
 void pk_remove_packages(void* handle, uint64_t flags, const char* const* ids, int n_ids,
                         bool allow_deps, bool autoremove) {
-    PK_TX_TRY(handle, tx(handle)->removePackages(flags, to_vec(ids, n_ids), allow_deps, autoremove));
+    PK_TX_TRY(handle,
+              tx(handle)->removePackages(flags, to_vec(ids, n_ids), allow_deps, autoremove));
 }
 
 void pk_update_packages(void* handle, uint64_t flags, const char* const* ids, int n_ids) {

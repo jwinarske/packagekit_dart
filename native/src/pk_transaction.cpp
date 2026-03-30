@@ -33,8 +33,7 @@ static constexpr uint8_t kSentinel = 0xFF;
 PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::ObjectPath object_path,
                                          Dart_Port dart_port)
     : path_(std::move(object_path)), port_(dart_port) {
-    proxy_ = sdbus::createProxy(
-        conn, sdbus::ServiceName{"org.freedesktop.PackageKit"}, path_);
+    proxy_ = sdbus::createProxy(conn, sdbus::ServiceName{"org.freedesktop.PackageKit"}, path_);
 
     // Register all signal handlers before any method call.
     proxy_->uponSignal("Package")
@@ -46,12 +45,12 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
     // Batch variant (emitted when supports-plural-signals hint is set).
     proxy_->uponSignal("Packages")
         .onInterface(PK_TX_IFACE)
-        .call([this](
-                  const std::vector<sdbus::Struct<uint32_t, std::string, std::string>>& packages) {
-            for (const auto& p : packages) {
-                onPackage(std::get<0>(p), std::get<1>(p), std::get<2>(p));
-            }
-        });
+        .call(
+            [this](const std::vector<sdbus::Struct<uint32_t, std::string, std::string>>& packages) {
+                for (const auto& p : packages) {
+                    onPackage(std::get<0>(p), std::get<1>(p), std::get<2>(p));
+                }
+            });
 
     proxy_->uponSignal("Progress")
         .onInterface(PK_TX_IFACE)
@@ -83,7 +82,7 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
                      const std::string& update_text, const std::string& changelog,
                      const uint32_t& state, const std::string& issued, const std::string& updated) {
             onUpdateDetail(pkg_id, updates, obsoletes, vendor_urls, bugzilla_urls, cve_urls,
-                             restart, update_text, changelog, state, issued, updated);
+                           restart, update_text, changelog, state, issued, updated);
         });
 
     proxy_->uponSignal("RepoDetail")
@@ -99,7 +98,7 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
                      const std::string& key_id, const std::string& fingerprint,
                      const std::string& timestamp, const uint32_t& type) {
             onRepoSignatureRequired(pkg_id, repo_name, key_url, key_userid, key_id, fingerprint,
-                                       timestamp, type);
+                                    timestamp, type);
         });
 
     proxy_->uponSignal("EulaRequired")
@@ -129,9 +128,8 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
 
     proxy_->uponSignal("Message")
         .onInterface(PK_TX_IFACE)
-        .call([this](const uint32_t& type, const std::string& details) {
-            onMessage(type, details);
-        });
+        .call(
+            [this](const uint32_t& type, const std::string& details) { onMessage(type, details); });
 
     proxy_->uponSignal("Finished")
         .onInterface(PK_TX_IFACE)
@@ -140,7 +138,6 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
         });
 
     proxy_->uponSignal("Destroy").onInterface(PK_TX_IFACE).call([this]() { onDestroy(); });
-
 }
 
 PkTransactionBridge::~PkTransactionBridge() = default;
@@ -273,7 +270,7 @@ void PkTransactionBridge::postError(const std::string& message) {
 // ── Signal handlers ──────────────────────────────────────────────────────────
 
 void PkTransactionBridge::onPackage(uint32_t info, const std::string& pkg_id,
-                                     const std::string& summary) {
+                                    const std::string& summary) {
     PkPackage p{.info = info, .packageId = pkg_id, .summary = summary};
     post(kPackage, p);
 }
@@ -361,7 +358,7 @@ void PkTransactionBridge::onUpdateDetail(
 }
 
 void PkTransactionBridge::onRepoDetail(const std::string& repo_id, const std::string& desc,
-                                         bool enabled) {
+                                       bool enabled) {
     PkRepoDetail rd{.repoId = repo_id, .description = desc, .enabled = enabled};
     post(kRepoDetail, rd);
 }
@@ -384,7 +381,7 @@ void PkTransactionBridge::onRepoSignatureRequired(
 }
 
 void PkTransactionBridge::onEulaRequired(const std::string& eula_id, const std::string& pkg_id,
-                                           const std::string& vendor, const std::string& license) {
+                                         const std::string& vendor, const std::string& license) {
     PkEulaRequired e{
         .eulaId = eula_id,
         .packageId = pkg_id,
@@ -395,7 +392,7 @@ void PkTransactionBridge::onEulaRequired(const std::string& eula_id, const std::
 }
 
 void PkTransactionBridge::onFiles(const std::string& pkg_id,
-                                   const std::vector<std::string>& files) {
+                                  const std::vector<std::string>& files) {
     PkFiles f{.packageId = pkg_id, .files = files};
     post(kFiles, f);
 }

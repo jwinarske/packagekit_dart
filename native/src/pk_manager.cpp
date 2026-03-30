@@ -24,8 +24,8 @@ static constexpr uint8_t kNetworkStateChanged = 0xD2;
 PkManager::PkManager(Dart_Port events_port) : events_port_(events_port) {
     conn_ = sdbus::createSystemBusConnection();
 
-    manager_proxy_ = sdbus::createProxy(
-        *conn_, sdbus::ServiceName{PK_SERVICE}, sdbus::ObjectPath{PK_PATH});
+    manager_proxy_ =
+        sdbus::createProxy(*conn_, sdbus::ServiceName{PK_SERVICE}, sdbus::ObjectPath{PK_PATH});
 
     registerManagerSignals();
 
@@ -57,10 +57,7 @@ void PkManager::registerManagerSignals() {
 
     manager_proxy_->uponSignal("TransactionListChanged")
         .onInterface(PK_IFACE)
-        .call([this](const std::vector<std::string>& txs) {
-            onTransactionListChanged(txs);
-        });
-
+        .call([this](const std::vector<std::string>& txs) { onTransactionListChanged(txs); });
 }
 
 void PkManager::readProperties() {

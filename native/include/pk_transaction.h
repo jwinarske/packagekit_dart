@@ -81,19 +81,19 @@ class PkTransactionBridge {
     void onStatusChanged(uint32_t status);
     void onDetails(const std::map<std::string, sdbus::Variant>& data);
     void onUpdateDetail(const std::string& pkg_id, const std::vector<std::string>& updates,
-                          const std::vector<std::string>& obsoletes,
-                          const std::vector<std::string>& vendor_urls,
-                          const std::vector<std::string>& bugzilla_urls,
-                          const std::vector<std::string>& cve_urls, uint32_t restart,
-                          const std::string& update_text, const std::string& changelog,
-                          uint32_t state, const std::string& issued, const std::string& updated);
+                        const std::vector<std::string>& obsoletes,
+                        const std::vector<std::string>& vendor_urls,
+                        const std::vector<std::string>& bugzilla_urls,
+                        const std::vector<std::string>& cve_urls, uint32_t restart,
+                        const std::string& update_text, const std::string& changelog,
+                        uint32_t state, const std::string& issued, const std::string& updated);
     void onRepoDetail(const std::string& repo_id, const std::string& desc, bool enabled);
     void onRepoSignatureRequired(const std::string& pkg_id, const std::string& repo_name,
-                                    const std::string& key_url, const std::string& key_userid,
-                                    const std::string& key_id, const std::string& fingerprint,
-                                    const std::string& timestamp, uint32_t type);
+                                 const std::string& key_url, const std::string& key_userid,
+                                 const std::string& key_id, const std::string& fingerprint,
+                                 const std::string& timestamp, uint32_t type);
     void onEulaRequired(const std::string& eula_id, const std::string& pkg_id,
-                          const std::string& vendor, const std::string& license);
+                        const std::string& vendor, const std::string& license);
     void onFiles(const std::string& pkg_id, const std::vector<std::string>& files);
     void onErrorCode(uint32_t code, const std::string& details);
     void onRequireRestart(uint32_t type, const std::string& pkg_id);
