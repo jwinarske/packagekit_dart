@@ -20,7 +20,16 @@ jobs:
       - run: ./scripts/clang_format.sh check
       - uses: dart-lang/setup-dart@v1
         with: { sdk: stable }
-      - run: dart format --set-exit-if-changed lib/ test/
+      - name: Dart format check
+        run: |
+          dirs=""
+          [ -d lib ] && dirs="$dirs lib/"
+          [ -d test ] && dirs="$dirs test/"
+          if [ -n "$dirs" ]; then
+            dart format --set-exit-if-changed $dirs
+          else
+            echo "No Dart directories to format."
+          fi
 
   # ── Ubuntu 24.04 x86_64 ──────────────────────────────────────────────────
   build-ubuntu-x64:

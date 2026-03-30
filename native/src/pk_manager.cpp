@@ -5,6 +5,7 @@
 // thread. All signal handlers post to the Dart events port.
 
 #include "pk_manager.h"
+#include "pk_transaction.h"
 
 #include <cstring>
 #include <utility>

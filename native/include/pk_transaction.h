@@ -1,0 +1,116 @@
+// pk_transaction.h
+//
+// PkTransactionBridge wraps one PackageKit transaction object path.
+//
+// Lifecycle (matches PackageKit protocol):
+//   1. PkManager::createTransaction()  -> transaction object path
+//   2. PkTransactionBridge::create()   -> proxy on that path
+//   3. setHints()                      -> mandatory first call
+//   4. invoke method (searchName, etc.)
+//   5. signals stream -> Dart_PostCObject_DL
+//   6. Finished signal -> 0x20 posted, then 0xFF sentinel
+//   7. Destroy signal  -> bridge self-destructs, proxy dropped
+//
+// The sdbus event loop thread delivers all signals. Handlers are
+// registered before invoking the method to guarantee no signal is missed.
+
+#pragma once
+#include "dart_api_dl.h"
+#include "pk_types.h"
+#include <sdbus-c++/sdbus-c++.h>
+#include <memory>
+#include <string>
+#include <vector>
+
+class PkTransactionBridge {
+public:
+    // Takes ownership of connection reference.
+    // object_path: returned by CreateTransaction on the manager.
+    PkTransactionBridge(sdbus::IConnection& conn,
+                        sdbus::ObjectPath    object_path,
+                        Dart_Port            dart_port);
+
+    ~PkTransactionBridge();
+
+    PkTransactionBridge(const PkTransactionBridge&) = delete;
+    PkTransactionBridge& operator=(const PkTransactionBridge&) = delete;
+
+    // Must be called before any method invocation.
+    // Sends locale, background flag, supports-plural-signals.
+    void setHints(const std::string& locale = "en_US.UTF-8");
+
+    // ── Query methods ────────────────────────────────────────────────
+    void searchName(uint64_t filter, const std::vector<std::string>& values);
+    void searchDetails(uint64_t filter, const std::vector<std::string>& values);
+    void searchFiles(uint64_t filter, const std::vector<std::string>& values);
+    void searchGroups(uint64_t filter, const std::vector<std::string>& values);
+    void getPackages(uint64_t filter);
+    void getUpdates(uint64_t filter);
+    void resolve(uint64_t filter, const std::vector<std::string>& package_ids);
+    void getDetails(const std::vector<std::string>& package_ids);
+    void getUpdateDetail(const std::vector<std::string>& package_ids);
+    void getFiles(const std::vector<std::string>& package_ids);
+    void getRepoList(uint64_t filter);
+    void dependsOn(uint64_t filter, const std::vector<std::string>& ids, bool recursive);
+    void requiredBy(uint64_t filter, const std::vector<std::string>& ids, bool recursive);
+    void getDistroUpgrades();
+    void getOldTransactions(uint32_t number);
+
+    // ── Write methods ────────────────────────────────────────────────
+    void installPackages(uint64_t flags, const std::vector<std::string>& ids);
+    void removePackages(uint64_t flags, const std::vector<std::string>& ids,
+                        bool allow_deps, bool autoremove);
+    void updatePackages(uint64_t flags, const std::vector<std::string>& ids);
+    void refreshCache(bool force);
+    void downloadPackages(bool store_in_cache, const std::vector<std::string>& ids);
+    void installFiles(uint64_t flags, const std::vector<std::string>& paths);
+    void repoEnable(const std::string& repo_id, bool enabled);
+    void acceptEula(const std::string& eula_id);
+    void cancel();
+
+private:
+    // Signal handlers — all called on the sdbus event loop thread.
+    void on_package(uint32_t info, const std::string& pkg_id, const std::string& summary);
+    void on_progress(const std::string& pkg_id, uint32_t status, uint32_t pct);
+    void on_item_progress(const std::string& id, uint32_t status, uint32_t pct);
+    void on_status_changed(uint32_t status);
+    void on_details(const std::map<std::string, sdbus::Variant>& data);
+    void on_update_detail(const std::string& pkg_id,
+                          const std::vector<std::string>& updates,
+                          const std::vector<std::string>& obsoletes,
+                          const std::vector<std::string>& vendor_urls,
+                          const std::vector<std::string>& bugzilla_urls,
+                          const std::vector<std::string>& cve_urls,
+                          uint32_t restart, const std::string& update_text,
+                          const std::string& changelog, uint32_t state,
+                          const std::string& issued, const std::string& updated);
+    void on_repo_detail(const std::string& repo_id,
+                        const std::string& desc, bool enabled);
+    void on_repo_signature_required(const std::string& pkg_id,
+                                    const std::string& repo_name,
+                                    const std::string& key_url,
+                                    const std::string& key_userid,
+                                    const std::string& key_id,
+                                    const std::string& fingerprint,
+                                    const std::string& timestamp,
+                                    uint32_t type);
+    void on_eula_required(const std::string& eula_id, const std::string& pkg_id,
+                          const std::string& vendor, const std::string& license);
+    void on_files(const std::string& pkg_id, const std::vector<std::string>& files);
+    void on_error_code(uint32_t code, const std::string& details);
+    void on_require_restart(uint32_t type, const std::string& pkg_id);
+    void on_message(uint32_t type, const std::string& details);
+    void on_finished(uint32_t exit_code, uint32_t runtime_ms);
+    void on_destroy();
+
+    // Post a glaze-encoded payload to Dart with the given discriminator.
+    template<typename T>
+    void post(uint8_t discriminator, const T& value);
+
+    // Post the 0x20 Finished marker, then 0xFF sentinel.
+    void post_finished(uint32_t exit_code, uint32_t runtime_ms);
+
+    sdbus::ObjectPath                                 path_;
+    Dart_Port                                         port_;
+    std::unique_ptr<sdbus::IProxy>                    proxy_;
+};

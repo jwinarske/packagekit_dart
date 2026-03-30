@@ -32,7 +32,6 @@ target_include_directories(packagekit_nc
     PRIVATE
         include
         generated         # sdbus-c++-xml2cpp output headers
-        ${SDBUS_CPP_INCLUDE_DIR}
 )
 
 target_link_libraries(packagekit_nc
