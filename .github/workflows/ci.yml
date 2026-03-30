@@ -56,6 +56,13 @@ jobs:
           cmake --build build --parallel
       - name: C++ unit tests
         run: ctest --test-dir build/test --output-on-failure -j4
+      - uses: dart-lang/setup-dart@v1
+        with: { sdk: stable }
+      - run: dart pub get
+      - name: Dart tests (mock bridge)
+        env:
+          PK_NC_LIB: ${{ github.workspace }}/build/libpackagekit_nc.so
+        run: dart test --reporter=expanded
 
   # ── ASAN + UBSan ─────────────────────────────────────────────────────────
   asan:
@@ -93,3 +100,37 @@ jobs:
             -DCMAKE_C_COMPILER=clang-19
           cmake --build build --parallel
       - run: ./scripts/clang_tidy.sh build
+
+  # ── Coverage (PR only) ───────────────────────────────────────────────────
+  coverage:
+    name: Coverage (PR)
+    runs-on: ubuntu-24.04
+    needs: [build-ubuntu-x64]
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v6
+        with: { submodules: recursive }
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build pkg-config gcc g++ \
+            libsystemd-dev libgtest-dev lcov
+      - uses: dart-lang/setup-dart@v1
+        with: { sdk: stable }
+      - run: dart pub global activate coverage && dart pub get
+      - name: Build with coverage
+        run: |
+          cmake -B build-cov native/ -GNinja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_COVERAGE=ON \
+            -DBUILD_TESTING=ON
+          cmake --build build-cov --parallel
+      - name: C++ tests + lcov
+        run: |
+          ctest --test-dir build-cov/test --output-on-failure -j4
+          lcov --capture --directory build-cov \
+            --output-file build-cov/coverage.info \
+            --ignore-errors mismatch
+          lcov --remove build-cov/coverage.info \
+            '*/third_party/*' '*/test/*' '/usr/*' \
+            --output-file build-cov/coverage.info

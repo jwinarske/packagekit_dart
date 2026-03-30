@@ -31,7 +31,7 @@ constexpr auto field(const char* name, MemberPtr ptr) {
 
 // Overload for deduced class type from member pointer.
 template <typename C, typename M>
-constexpr auto field(const char* name, M C::*ptr) {
+constexpr auto field(const char* name, M C::* ptr) {
     return FieldDescriptor<C, M C::*>{name, ptr};
 }
 

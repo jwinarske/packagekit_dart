@@ -5,27 +5,26 @@
 // thread. All signal handlers post to the Dart events port.
 
 #include "pk_manager.h"
-#include "pk_transaction.h"
 
 #include <cstring>
 #include <utility>
+
+#include "pk_transaction.h"
 
 static constexpr const char* PK_SERVICE = "org.freedesktop.PackageKit";
 static constexpr const char* PK_PATH = "/org/freedesktop/PackageKit";
 static constexpr const char* PK_IFACE = "org.freedesktop.PackageKit";
 
 // Manager event discriminators (not used for transaction signals).
-static constexpr uint8_t kManagerProps       = 0x0C;
-static constexpr uint8_t kUpdatesChanged     = 0xD0;
-static constexpr uint8_t kRepoListChanged    = 0xD1;
+static constexpr uint8_t kManagerProps = 0x0C;
+static constexpr uint8_t kUpdatesChanged = 0xD0;
+static constexpr uint8_t kRepoListChanged = 0xD1;
 static constexpr uint8_t kNetworkStateChanged = 0xD2;
 
-PkManager::PkManager(Dart_Port events_port)
-    : events_port_(events_port) {
+PkManager::PkManager(Dart_Port events_port) : events_port_(events_port) {
     conn_ = sdbus::createSystemBusConnection();
 
-    manager_proxy_ = sdbus::createProxy(*conn_, PK_SERVICE,
-                                        sdbus::ObjectPath{PK_PATH});
+    manager_proxy_ = sdbus::createProxy(*conn_, PK_SERVICE, sdbus::ObjectPath{PK_PATH});
 
     register_manager_signals();
 
@@ -43,19 +42,17 @@ PkManager::~PkManager() {
 }
 
 void PkManager::register_manager_signals() {
-    manager_proxy_->uponSignal("UpdatesChanged")
-        .onInterface(PK_IFACE)
-        .call([this]() { on_updates_changed(); });
+    manager_proxy_->uponSignal("UpdatesChanged").onInterface(PK_IFACE).call([this]() {
+        on_updates_changed();
+    });
 
-    manager_proxy_->uponSignal("RepoListChanged")
-        .onInterface(PK_IFACE)
-        .call([this]() { on_repo_list_changed(); });
+    manager_proxy_->uponSignal("RepoListChanged").onInterface(PK_IFACE).call([this]() {
+        on_repo_list_changed();
+    });
 
     manager_proxy_->uponSignal("NetworkStateChanged")
         .onInterface(PK_IFACE)
-        .call([this](const uint32_t& state) {
-            on_network_state_changed(state);
-        });
+        .call([this](const uint32_t& state) { on_network_state_changed(state); });
 
     manager_proxy_->uponSignal("TransactionListChanged")
         .onInterface(PK_IFACE)
@@ -69,54 +66,36 @@ void PkManager::register_manager_signals() {
 void PkManager::readProperties() {
     PkManagerProps props{};
 
-    props.backendName = manager_proxy_->getProperty("BackendName")
-                            .onInterface(PK_IFACE)
-                            .get<std::string>();
-    props.backendDescription = manager_proxy_->getProperty("BackendDescription")
-                                   .onInterface(PK_IFACE)
-                                   .get<std::string>();
-    props.backendAuthor = manager_proxy_->getProperty("BackendAuthor")
-                              .onInterface(PK_IFACE)
-                              .get<std::string>();
-    props.roles = manager_proxy_->getProperty("Roles")
-                      .onInterface(PK_IFACE)
-                      .get<uint64_t>();
-    props.filters = manager_proxy_->getProperty("Filters")
-                        .onInterface(PK_IFACE)
-                        .get<uint64_t>();
-    props.groups = manager_proxy_->getProperty("Groups")
-                       .onInterface(PK_IFACE)
-                       .get<uint64_t>();
+    props.backendName =
+        manager_proxy_->getProperty("BackendName").onInterface(PK_IFACE).get<std::string>();
+    props.backendDescription =
+        manager_proxy_->getProperty("BackendDescription").onInterface(PK_IFACE).get<std::string>();
+    props.backendAuthor =
+        manager_proxy_->getProperty("BackendAuthor").onInterface(PK_IFACE).get<std::string>();
+    props.roles = manager_proxy_->getProperty("Roles").onInterface(PK_IFACE).get<uint64_t>();
+    props.filters = manager_proxy_->getProperty("Filters").onInterface(PK_IFACE).get<uint64_t>();
+    props.groups = manager_proxy_->getProperty("Groups").onInterface(PK_IFACE).get<uint64_t>();
     props.mimeTypes = manager_proxy_->getProperty("MimeTypes")
                           .onInterface(PK_IFACE)
                           .get<std::vector<std::string>>();
-    props.distroId = manager_proxy_->getProperty("DistroId")
-                         .onInterface(PK_IFACE)
-                         .get<std::string>();
-    props.networkState = manager_proxy_->getProperty("NetworkState")
-                             .onInterface(PK_IFACE)
-                             .get<uint32_t>();
-    props.locked = manager_proxy_->getProperty("Locked")
-                       .onInterface(PK_IFACE)
-                       .get<bool>();
-    props.versionMajor = manager_proxy_->getProperty("VersionMajor")
-                             .onInterface(PK_IFACE)
-                             .get<uint32_t>();
-    props.versionMinor = manager_proxy_->getProperty("VersionMinor")
-                             .onInterface(PK_IFACE)
-                             .get<uint32_t>();
-    props.versionMicro = manager_proxy_->getProperty("VersionMicro")
-                             .onInterface(PK_IFACE)
-                             .get<uint32_t>();
+    props.distroId =
+        manager_proxy_->getProperty("DistroId").onInterface(PK_IFACE).get<std::string>();
+    props.networkState =
+        manager_proxy_->getProperty("NetworkState").onInterface(PK_IFACE).get<uint32_t>();
+    props.locked = manager_proxy_->getProperty("Locked").onInterface(PK_IFACE).get<bool>();
+    props.versionMajor =
+        manager_proxy_->getProperty("VersionMajor").onInterface(PK_IFACE).get<uint32_t>();
+    props.versionMinor =
+        manager_proxy_->getProperty("VersionMinor").onInterface(PK_IFACE).get<uint32_t>();
+    props.versionMicro =
+        manager_proxy_->getProperty("VersionMicro").onInterface(PK_IFACE).get<uint32_t>();
 
     post(kManagerProps, props);
 }
 
 sdbus::ObjectPath PkManager::createTransaction() {
     sdbus::ObjectPath path;
-    manager_proxy_->callMethod("CreateTransaction")
-        .onInterface(PK_IFACE)
-        .storeResultsTo(path);
+    manager_proxy_->callMethod("CreateTransaction").onInterface(PK_IFACE).storeResultsTo(path);
     return path;
 }
 
@@ -149,8 +128,7 @@ void PkManager::on_network_state_changed(uint32_t state) {
     Dart_PostCObject_DL(events_port_, &obj);
 }
 
-void PkManager::on_transaction_list_changed(
-    const std::vector<sdbus::ObjectPath>& /*txs*/) {
+void PkManager::on_transaction_list_changed(const std::vector<sdbus::ObjectPath>& /*txs*/) {
     // Transaction list changes are informational; not forwarded to Dart.
     // The Dart layer tracks transactions it created.
 }

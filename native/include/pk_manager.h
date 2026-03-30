@@ -5,18 +5,20 @@
 // All PkTransactionBridge instances share the same connection.
 
 #pragma once
-#include "dart_api_dl.h"
-#include "pk_types.h"
 #include <sdbus-c++/sdbus-c++.h>
+
 #include <atomic>
 #include <memory>
 #include <string>
 #include <thread>
 
+#include "dart_api_dl.h"
+#include "pk_types.h"
+
 class PkTransactionBridge;
 
 class PkManager {
-public:
+   public:
     // Connects to the system bus, starts the event loop thread.
     explicit PkManager(Dart_Port events_port);
     ~PkManager();
@@ -33,9 +35,11 @@ public:
     // Convenience: create + wrap in a PkTransactionBridge for Dart.
     PkTransactionBridge* createTransactionBridge(Dart_Port tx_port);
 
-    sdbus::IConnection& connection() { return *conn_; }
+    sdbus::IConnection& connection() {
+        return *conn_;
+    }
 
-private:
+   private:
     void register_manager_signals();
     void on_updates_changed();
     void on_repo_list_changed();
@@ -50,7 +54,7 @@ private:
     void post_event(uint8_t event_byte);
 
     std::unique_ptr<sdbus::IConnection> conn_;
-    std::unique_ptr<sdbus::IProxy>      manager_proxy_;
-    std::thread                         event_thread_;
-    Dart_Port                           events_port_;
+    std::unique_ptr<sdbus::IProxy> manager_proxy_;
+    std::thread event_thread_;
+    Dart_Port events_port_;
 };

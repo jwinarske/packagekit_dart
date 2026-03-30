@@ -1,11 +1,11 @@
 // test_types.cpp — glaze roundtrip tests for every pk_types.h struct.
 // Encodes each struct to bytes, decodes it back, and verifies field equality.
 
-#include "pk_types.h"
-
 #include <gtest/gtest.h>
 
 #include <cstring>
+
+#include "pk_types.h"
 
 // ── PkPackage ────────────────────────────────────────────────────────────────
 
@@ -182,8 +182,7 @@ TEST(PkTypes, PkRepoDetailDisabled) {
 TEST(PkTypes, PkFilesRoundtrip) {
     PkFiles orig{
         .packageId = "bash;5.1.8-1;x86_64;fedora",
-        .files = {"/usr/bin/bash", "/usr/share/man/man1/bash.1.gz",
-                  "/etc/skel/.bashrc"},
+        .files = {"/usr/bin/bash", "/usr/share/man/man1/bash.1.gz", "/etc/skel/.bashrc"},
     };
     auto buf = glz::encode(orig);
     PkFiles decoded{};

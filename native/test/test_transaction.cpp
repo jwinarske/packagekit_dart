@@ -4,10 +4,10 @@
 // the signal-to-struct conversion and discriminator-tagged serialization
 // logic that the bridge performs before posting to Dart.
 
+#include <gtest/gtest.h>
+
 #include "pk_transaction.h"
 #include "pk_types.h"
-
-#include <gtest/gtest.h>
 
 // ── Package signal encoding ──────────────────────────────────────────────────
 

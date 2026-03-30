@@ -118,9 +118,8 @@ bool Dart_PostCObject_DL(Dart_Port port_id, Dart_CObject* message);
 bool Dart_PostInteger_DL(Dart_Port port_id, int64_t message);
 
 // Create a new native port.
-Dart_Port Dart_NewNativePort_DL(const char* name,
-                                 void (*handler)(Dart_Port, Dart_CObject*),
-                                 bool handle_concurrently);
+Dart_Port Dart_NewNativePort_DL(const char* name, void (*handler)(Dart_Port, Dart_CObject*),
+                                bool handle_concurrently);
 
 // Close a native port.
 bool Dart_CloseNativePort_DL(Dart_Port native_port_id);

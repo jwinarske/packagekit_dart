@@ -13,8 +13,7 @@
 // Function pointer storage — populated by Dart_InitializeApiDL.
 static bool (*post_c_object_)(Dart_Port, Dart_CObject*) = NULL;
 static bool (*post_integer_)(Dart_Port, int64_t) = NULL;
-static Dart_Port (*new_native_port_)(const char*, void (*)(Dart_Port, Dart_CObject*),
-                                     bool) = NULL;
+static Dart_Port (*new_native_port_)(const char*, void (*)(Dart_Port, Dart_CObject*), bool) = NULL;
 static bool (*close_native_port_)(Dart_Port) = NULL;
 
 // Simple API DL initialization. In production, this parses the Dart API
@@ -47,9 +46,8 @@ bool Dart_PostInteger_DL(Dart_Port port_id, int64_t message) {
     return false;
 }
 
-Dart_Port Dart_NewNativePort_DL(const char* name,
-                                 void (*handler)(Dart_Port, Dart_CObject*),
-                                 bool handle_concurrently) {
+Dart_Port Dart_NewNativePort_DL(const char* name, void (*handler)(Dart_Port, Dart_CObject*),
+                                bool handle_concurrently) {
     if (new_native_port_ != NULL) {
         return new_native_port_(name, handler, handle_concurrently);
     }

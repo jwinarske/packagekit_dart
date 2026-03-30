@@ -4,10 +4,10 @@
 // logic using a mock/stub approach. Since we cannot connect to a real
 // system bus in CI, we test the serialization and post logic in isolation.
 
+#include <gtest/gtest.h>
+
 #include "pk_manager.h"
 #include "pk_types.h"
-
-#include <gtest/gtest.h>
 
 // ── PkManagerProps serialization tests ───────────────────────────────────────
 // These verify that the manager properties can be serialized with the
