@@ -1,0 +1,28 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Dart
+.dart_tool/
+.packages
+pubspec.lock
+build/
+doc/api/
+
+# C++ build
+native/build/
+compile_commands.json
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# Coverage
+*.gcda
+*.gcno
+*.info
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db

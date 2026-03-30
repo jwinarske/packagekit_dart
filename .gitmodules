@@ -1,0 +1,4 @@
+[submodule "native/third_party/sdbus-cpp"]
+	path = native/third_party/sdbus-cpp
+	url = https://github.com/Kistler-Group/sdbus-cpp.git
+	branch = master

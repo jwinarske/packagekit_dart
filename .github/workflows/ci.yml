@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:    { branches: [main, develop] }
+  pull_request: { branches: [main] }
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Format check ──────────────────────────────────────────────────────────
+  format:
+    name: Format check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - run: sudo apt-get update -qq && sudo apt-get install -y clang-format-19
+      - run: ./scripts/clang_format.sh check
+      - uses: dart-lang/setup-dart@v1
+        with: { sdk: stable }
+      - run: dart format --set-exit-if-changed lib/ test/
