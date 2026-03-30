@@ -1,5 +1,6 @@
 // codec.dart — GlazeCodec for decoding native_comms Channel B payloads.
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import '../details.dart';
@@ -226,25 +227,37 @@ class GlazeCodec {
 /// Little-endian binary reader matching glaze_meta.h encoding.
 class _Reader {
   final ByteData _data;
+  final int _length;
   int _offset;
 
   _Reader(Uint8List bytes, int offset)
       : _data = bytes.buffer.asByteData(bytes.offsetInBytes),
+        _length = bytes.length,
         _offset = offset;
 
+  void _checkBounds(int needed) {
+    if (_offset + needed > _length) {
+      throw RangeError('Codec read overrun: need $needed bytes at '
+          'offset $_offset, but buffer is $_length bytes');
+    }
+  }
+
   int readUint32() {
+    _checkBounds(4);
     final v = _data.getUint32(_offset, Endian.little);
     _offset += 4;
     return v;
   }
 
   int readUint64() {
+    _checkBounds(8);
     final v = _data.getUint64(_offset, Endian.little);
     _offset += 8;
     return v;
   }
 
   bool readBool() {
+    _checkBounds(1);
     final v = _data.getUint8(_offset) != 0;
     _offset += 1;
     return v;
@@ -252,10 +265,11 @@ class _Reader {
 
   String readString() {
     final len = readUint32();
+    _checkBounds(len);
     final bytes =
         Uint8List.view(_data.buffer, _data.offsetInBytes + _offset, len);
     _offset += len;
-    return String.fromCharCodes(bytes);
+    return utf8.decode(bytes);
   }
 
   List<String> readStringList() {

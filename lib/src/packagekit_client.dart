@@ -318,8 +318,14 @@ class PkClient {
     final restart = StreamController<PkRequireRestart>();
     final errs = StreamController<PkErrorCode>();
     final done = Completer<PkTransactionResult>();
+    var finished = false;
+
+    final txHandle =
+        PkBindings.transactionCreate(_managerHandle, port.sendPort.nativePort);
+    final validHandle = (txHandle as Pointer).address != 0;
 
     void close() {
+      finished = true;
       for (final c in [
         pkgs,
         dets,
@@ -336,57 +342,68 @@ class PkClient {
         if (!c.isClosed) c.close();
       }
       port.close();
+      // Free the native transaction bridge.
+      if (validHandle) {
+        PkBindings.transactionDestroy(txHandle);
+      }
     }
 
     port.listen((dynamic msg) {
       if (msg is! Uint8List) return;
-      final disc = msg[0];
-      switch (disc) {
-        case 0x01:
-          pkgs.add(GlazeCodec.decode<PkPackage>(msg, 1));
-        case 0x02:
-          prog.add(GlazeCodec.decode<PkProgress>(msg, 1));
-        case 0x03:
-          dets.add(GlazeCodec.decode<PkPackageDetail>(msg, 1));
-        case 0x04:
-          updDets.add(GlazeCodec.decode<PkUpdateDetail>(msg, 1));
-        case 0x05:
-          repos.add(GlazeCodec.decode<PkRepoDetail>(msg, 1));
-        case 0x06:
-          fls.add(GlazeCodec.decode<PkFiles>(msg, 1));
-        case 0x07:
-          errs.add(GlazeCodec.decode<PkErrorCode>(msg, 1));
-        case 0x08:
-          msgs.add(GlazeCodec.decode<PkMessage>(msg, 1));
-        case 0x09:
-          eula.add(GlazeCodec.decode<PkEulaRequired>(msg, 1));
-        case 0x0A:
-          sig.add(GlazeCodec.decode<PkRepoSigRequired>(msg, 1));
-        case 0x0B:
-          restart.add(GlazeCodec.decode<PkRequireRestart>(msg, 1));
-        case 0x20:
-          final result = GlazeCodec.decode<PkFinished>(msg, 1);
-          final exit = PkExit.fromInt(result.exitCode);
-          if (!done.isCompleted) {
-            if (exit == PkExit.success) {
-              done.complete(
-                  PkTransactionResult(exit: exit, runtimeMs: result.runtimeMs));
-            } else {
-              done.completeError(PkTransactionException(
-                  'Transaction failed: ${exit.name}',
-                  exit: exit,
-                  runtimeMs: result.runtimeMs));
+      try {
+        final disc = msg[0];
+        switch (disc) {
+          case 0x01:
+            pkgs.add(GlazeCodec.decode<PkPackage>(msg, 1));
+          case 0x02:
+            prog.add(GlazeCodec.decode<PkProgress>(msg, 1));
+          case 0x03:
+            dets.add(GlazeCodec.decode<PkPackageDetail>(msg, 1));
+          case 0x04:
+            updDets.add(GlazeCodec.decode<PkUpdateDetail>(msg, 1));
+          case 0x05:
+            repos.add(GlazeCodec.decode<PkRepoDetail>(msg, 1));
+          case 0x06:
+            fls.add(GlazeCodec.decode<PkFiles>(msg, 1));
+          case 0x07:
+            errs.add(GlazeCodec.decode<PkErrorCode>(msg, 1));
+          case 0x08:
+            msgs.add(GlazeCodec.decode<PkMessage>(msg, 1));
+          case 0x09:
+            eula.add(GlazeCodec.decode<PkEulaRequired>(msg, 1));
+          case 0x0A:
+            sig.add(GlazeCodec.decode<PkRepoSigRequired>(msg, 1));
+          case 0x0B:
+            restart.add(GlazeCodec.decode<PkRequireRestart>(msg, 1));
+          case 0x20:
+            final result = GlazeCodec.decode<PkFinished>(msg, 1);
+            final exit = PkExit.fromInt(result.exitCode);
+            if (!done.isCompleted) {
+              if (exit == PkExit.success) {
+                done.complete(PkTransactionResult(
+                    exit: exit, runtimeMs: result.runtimeMs));
+              } else {
+                done.completeError(PkTransactionException(
+                    'Transaction failed: ${exit.name}',
+                    exit: exit,
+                    runtimeMs: result.runtimeMs));
+              }
             }
-          }
-        case 0xFF:
-          // Delay close so buffered stream events drain first.
-          Future.microtask(close);
+          case 0xFF:
+            // Delay close so buffered stream events drain first.
+            Future.microtask(close);
+        }
+      } on Object catch (e) {
+        // Codec or stream error — fail the transaction so callers don't hang.
+        if (!done.isCompleted) {
+          done.completeError(
+              PkException('Internal decode error: $e'));
+        }
+        Future.microtask(close);
       }
     });
 
-    final txHandle =
-        PkBindings.transactionCreate(_managerHandle, port.sendPort.nativePort);
-    if ((txHandle as Pointer).address == 0) {
+    if (!validHandle) {
       close();
       done.completeError(const PkServiceUnavailableException(
           'Failed to create PackageKit transaction.'));
@@ -408,7 +425,9 @@ class PkClient {
       requireRestart: restart.stream,
       errors: errs.stream,
       result: done.future,
-      cancel: () => PkBindings.transactionCancel(txHandle),
+      cancel: () {
+        if (!finished) PkBindings.transactionCancel(txHandle);
+      },
     );
   }
 

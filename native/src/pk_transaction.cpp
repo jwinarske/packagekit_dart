@@ -140,7 +140,11 @@ PkTransactionBridge::PkTransactionBridge(sdbus::IConnection& conn, sdbus::Object
     proxy_->uponSignal("Destroy").onInterface(PK_TX_IFACE).call([this]() { onDestroy(); });
 }
 
-PkTransactionBridge::~PkTransactionBridge() = default;
+PkTransactionBridge::~PkTransactionBridge() {
+    // Unregister the proxy before destruction to ensure no signal handler
+    // fires on the event loop thread after member data is freed.
+    proxy_->unregister();
+}
 
 // ── SetHints ─────────────────────────────────────────────────────────────────
 

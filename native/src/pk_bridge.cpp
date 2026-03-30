@@ -66,7 +66,9 @@ void* pk_manager_create(Dart_Port events_port) {
 }
 
 void pk_manager_destroy(void* handle) {
-    delete mgr(handle);
+    if (handle) {
+        delete mgr(handle);
+    }
 }
 
 void pk_manager_read_properties(void* handle) {
@@ -84,7 +86,9 @@ void* pk_transaction_create(void* manager, Dart_Port tx_port) {
 }
 
 void pk_transaction_destroy(void* handle) {
-    delete tx(handle);
+    if (handle) {
+        delete tx(handle);
+    }
 }
 
 void pk_transaction_set_hints(void* handle, const char* locale) {
