@@ -100,6 +100,24 @@ void main() {
       expect(plan.obsoleting, hasLength(1));
     });
 
+    test('categorizes reinstalling and downgrading', () {
+      final pkgs = [
+        PkPackage(
+          info: PkInfo.reinstalling,
+          id: PkPackageId.parse('a;1;x;r'),
+          summary: '',
+        ),
+        PkPackage(
+          info: PkInfo.downgrading,
+          id: PkPackageId.parse('b;1;x;r'),
+          summary: '',
+        ),
+      ];
+      final plan = planFromPackages(pkgs);
+      expect(plan.reinstalling, hasLength(1));
+      expect(plan.downgrading, hasLength(1));
+    });
+
     test('unknown info treated as install', () {
       final pkgs = [
         PkPackage(

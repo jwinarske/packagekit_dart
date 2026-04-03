@@ -2,3 +2,6 @@ coverage:
   ignore:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - "lib/src/ffi/bindings.dart"
+    - "lib/src/internal/library_loader.dart"
+    - "lib/src/packagekit_client.dart"

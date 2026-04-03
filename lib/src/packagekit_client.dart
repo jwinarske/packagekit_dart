@@ -11,8 +11,8 @@ import 'details.dart';
 import 'enums.dart';
 import 'exceptions.dart';
 import 'ffi/bindings.dart';
-import 'ffi/codec.dart';
 import 'ffi/types.dart';
+import 'internal/dispatcher.dart';
 import 'package.dart';
 import 'repo.dart';
 import 'transaction.dart';
@@ -302,44 +302,15 @@ class PkClient {
 
   PkTransaction _startQuery(void Function(Object txHandle) invoke) {
     final port = ReceivePort('packagekit.tx');
-
-    final pkgs = StreamController<PkPackage>();
-    final dets = StreamController<PkPackageDetail>();
-    final updDets = StreamController<PkUpdateDetail>();
-    final repos = StreamController<PkRepoDetail>();
-    final fls = StreamController<PkFiles>();
-    final prog = StreamController<PkProgress>();
-    final msgs = StreamController<PkMessage>();
-    final eula = StreamController<PkEulaRequired>();
-    final sig = StreamController<PkRepoSigRequired>();
-    final restart = StreamController<PkRequireRestart>();
-    final errs = StreamController<PkErrorCode>();
-    final done = Completer<PkTransactionResult>();
-    var finished = false;
+    final d = TransactionDispatcher();
 
     final txHandle =
         PkBindings.transactionCreate(_managerHandle, port.sendPort.nativePort);
     final validHandle = (txHandle as Pointer).address != 0;
 
-    void close() {
-      finished = true;
-      for (final c in [
-        pkgs,
-        dets,
-        updDets,
-        repos,
-        fls,
-        prog,
-        msgs,
-        eula,
-        sig,
-        restart,
-        errs
-      ]) {
-        if (!c.isClosed) c.close();
-      }
+    void closeAll() {
+      d.close();
       port.close();
-      // Free the native transaction bridge.
       if (validHandle) {
         PkBindings.transactionDestroy(txHandle);
       }
@@ -347,61 +318,13 @@ class PkClient {
 
     port.listen((dynamic msg) {
       if (msg is! Uint8List) return;
-      try {
-        final disc = msg[0];
-        switch (disc) {
-          case 0x01:
-            pkgs.add(GlazeCodec.decode<PkPackage>(msg, 1));
-          case 0x02:
-            prog.add(GlazeCodec.decode<PkProgress>(msg, 1));
-          case 0x03:
-            dets.add(GlazeCodec.decode<PkPackageDetail>(msg, 1));
-          case 0x04:
-            updDets.add(GlazeCodec.decode<PkUpdateDetail>(msg, 1));
-          case 0x05:
-            repos.add(GlazeCodec.decode<PkRepoDetail>(msg, 1));
-          case 0x06:
-            fls.add(GlazeCodec.decode<PkFiles>(msg, 1));
-          case 0x07:
-            errs.add(GlazeCodec.decode<PkErrorCode>(msg, 1));
-          case 0x08:
-            msgs.add(GlazeCodec.decode<PkMessage>(msg, 1));
-          case 0x09:
-            eula.add(GlazeCodec.decode<PkEulaRequired>(msg, 1));
-          case 0x0A:
-            sig.add(GlazeCodec.decode<PkRepoSigRequired>(msg, 1));
-          case 0x0B:
-            restart.add(GlazeCodec.decode<PkRequireRestart>(msg, 1));
-          case 0x20:
-            final result = GlazeCodec.decode<PkFinished>(msg, 1);
-            final exit = PkExit.fromInt(result.exitCode);
-            if (!done.isCompleted) {
-              if (exit == PkExit.success) {
-                done.complete(PkTransactionResult(
-                    exit: exit, runtimeMs: result.runtimeMs));
-              } else {
-                done.completeError(PkTransactionException(
-                    'Transaction failed: ${exit.name}',
-                    exit: exit,
-                    runtimeMs: result.runtimeMs));
-              }
-            }
-          case 0xFF:
-            // Delay close so buffered stream events drain first.
-            Future.microtask(close);
-        }
-      } on Object catch (e) {
-        // Codec or stream error — fail the transaction so callers don't hang.
-        if (!done.isCompleted) {
-          done.completeError(PkException('Internal decode error: $e'));
-        }
-        Future.microtask(close);
-      }
+      d.dispatch(msg);
+      if (d.finished) closeAll();
     });
 
     if (!validHandle) {
-      close();
-      done.completeError(const PkServiceUnavailableException(
+      closeAll();
+      d.done.completeError(const PkServiceUnavailableException(
           'Failed to create PackageKit transaction.'));
     } else {
       PkBindings.transactionSetHints(txHandle, 'en_US.UTF-8');
@@ -409,38 +332,36 @@ class PkClient {
     }
 
     return PkTransaction(
-      packages: pkgs.stream,
-      details: dets.stream,
-      updateDetails: updDets.stream,
-      repoDetails: repos.stream,
-      files: fls.stream,
-      progress: prog.stream,
-      messages: msgs.stream,
-      eulaRequired: eula.stream,
-      repoSigRequired: sig.stream,
-      requireRestart: restart.stream,
-      errors: errs.stream,
-      result: done.future,
+      packages: d.packages.stream,
+      details: d.details.stream,
+      updateDetails: d.updateDetails.stream,
+      repoDetails: d.repoDetails.stream,
+      files: d.files.stream,
+      progress: d.progress.stream,
+      messages: d.messages.stream,
+      eulaRequired: d.eulaRequired.stream,
+      repoSigRequired: d.repoSigRequired.stream,
+      requireRestart: d.requireRestart.stream,
+      errors: d.errors.stream,
+      result: d.done.future,
       cancel: () {
-        if (!finished) PkBindings.transactionCancel(txHandle);
+        if (!d.finished) PkBindings.transactionCancel(txHandle);
       },
     );
   }
 
   void _onManagerEvent(dynamic msg) {
-    if (msg is! Uint8List) return;
-    switch (msg[0]) {
-      case 0x0C:
-        _props = GlazeCodec.decode<PkManagerProps>(msg, 1);
-        _daemonEvents.add(PkPropsEvent(_props!));
-      case 0xD0:
+    final event = dispatchManagerEvent(msg);
+    if (event == null) return;
+    switch (event) {
+      case ManagerPropsEvent(:final props):
+        _props = props;
+        _daemonEvents.add(PkPropsEvent(props));
+      case ManagerUpdatesChangedEvent():
         _daemonEvents.add(PkUpdatesChangedEvent());
-      case 0xD1:
+      case ManagerRepoListChangedEvent():
         _daemonEvents.add(PkRepoListChangedEvent());
-      case 0xD2:
-        final state = msg.buffer
-            .asByteData(msg.offsetInBytes)
-            .getUint32(1, Endian.little);
+      case ManagerNetworkStateChangedEvent(:final state):
         _daemonEvents.add(PkNetworkStateChangedEvent(state));
     }
   }
