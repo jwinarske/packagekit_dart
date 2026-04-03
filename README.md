@@ -115,6 +115,13 @@ This is expected behavior. Always pass the **original package IDs** to
 `installPackages()`, not `plan.allIds` — let the backend resolve the current
 state at install time.
 
+## Flutter example
+
+A full-featured Flutter desktop catalog app is included at
+[`example/packagekit_catalog/`](example/packagekit_catalog/).
+
+![PackageKit Catalog](doc/flutter_example_001.png)
+
 ## Examples
 
 | Example | Description |
