@@ -7,14 +7,12 @@ import 'dart:ffi';
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'details.dart';
 import 'enums.dart';
 import 'exceptions.dart';
 import 'ffi/bindings.dart';
 import 'ffi/types.dart';
 import 'internal/dispatcher.dart';
 import 'package.dart';
-import 'repo.dart';
 import 'transaction.dart';
 
 /// Daemon-level events from the manager.

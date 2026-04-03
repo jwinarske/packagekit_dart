@@ -1,3 +1,18 @@
+## 0.3.0
+
+- Extract TransactionDispatcher and dispatchManagerEvent for testable
+  message dispatch without a live daemon
+- 102 unit tests covering all codec discriminators, model constructors,
+  enum round-trips, dispatcher paths, and error handling
+- ~98% coverage on testable Dart code (FFI glue excluded)
+- Remove unused generated sdbus-cpp proxy headers and D-Bus XML interfaces
+- Remove go_router; use index-based navigation for instant screen switching
+- Fix CI: add libclang-rt-19-dev for ASAN, exclude test/ from clang-tidy,
+  add dart pub get before format check, add flutter analyze step
+- Lower Dart coverage threshold to 10% (FFI-heavy package)
+- Add Flutter example screenshot to README
+- Fix detail pane overlay on screen switch and package selection
+
 ## 0.2.0
 
 - Native build hook (`hook/build.dart`) using `package:hooks` and
