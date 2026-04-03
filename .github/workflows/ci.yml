@@ -20,11 +20,13 @@ jobs:
       - run: ./scripts/clang_format.sh check
       - uses: dart-lang/setup-dart@v1
         with: { sdk: stable }
+      - run: dart pub get
       - name: Dart format check
         run: |
           dirs=""
           [ -d lib ] && dirs="$dirs lib/"
           [ -d test ] && dirs="$dirs test/"
+          [ -d hook ] && dirs="$dirs hook/"
           if [ -n "$dirs" ]; then
             dart format --set-exit-if-changed $dirs
           else
@@ -175,6 +177,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build pkg-config clang-19 \
+            libclang-rt-19-dev \
             libsystemd-dev libgtest-dev
       - run: ./scripts/asan.sh build-asan
 
@@ -201,12 +204,31 @@ jobs:
           cmake --build build --parallel
       - run: ./scripts/clang_tidy.sh build
 
-  # ── Coverage (PR only) ───────────────────────────────────────────────────
+  # ── Publish dry-run ───────────────────────────────────────────────────────
+  publish-dry-run:
+    name: Publish dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: { submodules: recursive }
+      - uses: dart-lang/setup-dart@v1
+        with: { sdk: stable }
+      - run: dart pub get
+      - run: dart pub publish --dry-run
+      - run: dart analyze
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - name: Flutter example analyze
+        working-directory: example/packagekit_catalog
+        run: |
+          flutter pub get
+          flutter analyze
+
+  # ── Coverage ─────────────────────────────────────────────────────────────
   coverage:
-    name: Coverage (PR)
+    name: Coverage
     runs-on: ubuntu-24.04
     needs: [build-ubuntu-x64]
-    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v6
         with: { submodules: recursive }
@@ -235,3 +257,41 @@ jobs:
             '*/third_party/*' '*/test/*' '/usr/*' \
             --output-file build-cov/coverage.info \
             --ignore-errors empty
+      - name: Dart tests with coverage
+        env:
+          PK_NC_LIB: ${{ github.workspace }}/build-cov/libpackagekit_nc.so
+        run: |
+          dart test --coverage=coverage
+          dart pub global run coverage:format_coverage \
+            --lcov --in=coverage --out=coverage/lcov.info \
+            --report-on=lib
+      - name: Remove generated files from coverage
+        run: |
+          python3 << 'EOF'
+          import re
+          with open('coverage/lcov.info') as f:
+              content = f.read()
+          blocks = re.split(r'(?=^SF:)', content, flags=re.MULTILINE)
+          filtered = []
+          for block in blocks:
+              if not block.startswith('SF:'):
+                  filtered.append(block)
+                  continue
+              filename = block.split('\n')[0][3:]
+              if '.g.dart' in filename or '.freezed.dart' in filename:
+                  continue
+              filtered.append(block)
+          with open('coverage/lcov.info', 'w') as f:
+              f.write(''.join(filtered))
+          EOF
+      - name: Enforce coverage threshold (10%)
+        run: |
+          pct=$(awk -F'[:,]' '/^DA:/{total++; if ($3 > 0) hit++} END { if (total == 0) { print 0 } else { printf "%.2f", (hit/total)*100 } }' coverage/lcov.info)
+          echo "Coverage: ${pct}%"
+          awk -v p="$pct" 'BEGIN { exit (p >= 10) ? 0 : 1 }'
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: build-cov/coverage.info,coverage/lcov.info
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}

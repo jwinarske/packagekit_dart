@@ -32,7 +32,6 @@ add_library(packagekit_nc SHARED
 target_include_directories(packagekit_nc
     PRIVATE
         include
-        generated         # sdbus-c++-xml2cpp output headers
 )
 
 target_link_libraries(packagekit_nc
@@ -60,3 +59,6 @@ if(ENABLE_COVERAGE)
 endif()
 
 add_clang_format_targets()
+
+# ── Install rule (used by hook/build.dart) ────────────────────────────────────
+install(TARGETS packagekit_nc LIBRARY DESTINATION lib)

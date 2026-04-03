@@ -8,7 +8,6 @@ add_test(NAME test_types COMMAND test_types)
 add_executable(test_manager test_manager.cpp)
 target_include_directories(test_manager PRIVATE
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/generated
 )
 target_link_libraries(test_manager PRIVATE
     sdbus-c++
@@ -19,7 +18,6 @@ add_test(NAME test_manager COMMAND test_manager)
 add_executable(test_transaction test_transaction.cpp)
 target_include_directories(test_transaction PRIVATE
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/generated
 )
 target_link_libraries(test_transaction PRIVATE
     sdbus-c++

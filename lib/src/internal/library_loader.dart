@@ -12,11 +12,15 @@ DynamicLibrary loadPackagekitNc() {
     return DynamicLibrary.open(envPath);
   }
 
-  // 2. Next to the running executable.
+  // 2. Search relative to the running executable.
+  //    Covers standalone Dart, Flutter bundle, and various layouts.
   final exeDir = p.dirname(Platform.resolvedExecutable);
   final candidates = [
     p.join(exeDir, 'libpackagekit_nc.so'),
     p.join(exeDir, 'lib', 'libpackagekit_nc.so'),
+    // Flutter Linux bundle: executable is in bundle/, lib is bundle/lib/.
+    // In debug mode Platform.resolvedExecutable may resolve outside bundle/.
+    p.join(exeDir, '..', 'bundle', 'lib', 'libpackagekit_nc.so'),
   ];
 
   for (final path in candidates) {
