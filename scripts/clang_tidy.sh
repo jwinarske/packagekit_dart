@@ -30,7 +30,7 @@ FILES=()
 while IFS= read -r -d '' f; do
     FILES+=("$f")
 done < <(find "$NATIVE_DIR" -name '*.cpp' \
-    -not -path '*/third_party/*' -not -path '*/generated/*' -print0)
+    -not -path '*/third_party/*' -not -path '*/generated/*' -not -path '*/test/*' -print0)
 
 if [[ ${#FILES[@]} -eq 0 ]]; then
     echo "No source files found."

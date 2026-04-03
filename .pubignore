@@ -1,5 +1,16 @@
-native/
+# Build artifacts
 build/
-interfaces/
-.github/
-CMakeLists.txt
+build-asan/
+coverage/
+
+# IDE / tooling
+.idea/
+.vscode/
+.claude/
+.dart_tool/
+
+# Scripts (not needed by consumers)
+scripts/
+
+# Flutter example app (separate package, not part of the library)
+example/packagekit_catalog/

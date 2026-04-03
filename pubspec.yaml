@@ -1,22 +1,24 @@
 name: packagekit_dart
 description: >-
-  Typed Dart API for PackageKit, the cross-distro Linux package manager.
-  Search, install, update, remove packages and manage repos via D-Bus
-  with async streams and full dependency resolution support.
-version: 0.1.0
+  Dart FFI bindings for PackageKit, the cross-distro Linux package manager.
+  Search, install, update, and remove packages via D-Bus with async streams.
+version: 0.2.0
 repository: https://github.com/meta-flutter/packagekit_dart
 issue_tracker: https://github.com/meta-flutter/packagekit_dart/issues
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
-  ffi:  ^2.1.0
+  ffi: ^2.1.0
   path: ^1.9.0
+  hooks: ^1.0.0
+  code_assets: ^1.0.0
+  native_toolchain_c: ^0.17.0
 
 dev_dependencies:
-  test:     ^1.24.0
-  lints:    ^4.0.0
+  test: ^1.24.0
+  lints: ^4.0.0
 
 platforms:
   linux:

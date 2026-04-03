@@ -1,3 +1,16 @@
+## 0.2.0
+
+- Native build hook (`hook/build.dart`) using `package:hooks` and
+  `package:code_assets` — automatically compiles libpackagekit_nc.so via
+  CMake at build time and bundles it as a CodeAsset
+- Auto-clone sdbus-cpp at pinned commit when submodule is unavailable
+  (pub.dev installs)
+- Flutter example app (`example/packagekit_catalog/`) — Material 3 desktop
+  catalog with Riverpod state management, GoRouter navigation, search,
+  installed packages, updates, and repository views
+- Codecov integration with 60% threshold enforcement
+- Dart and C++ coverage collection in CI
+
 ## 0.1.0
 
 - Initial release

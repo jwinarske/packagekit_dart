@@ -288,10 +288,7 @@ class PkClient {
 
   Future<void> _loadProperties() async {
     final c = Completer<void>();
-    _daemonEvents.stream
-        .where((e) => e is PkPropsEvent)
-        .first
-        .then((_) {
+    _daemonEvents.stream.where((e) => e is PkPropsEvent).first.then((_) {
       if (!c.isCompleted) c.complete();
     });
     PkBindings.managerReadProperties(_managerHandle);
@@ -396,8 +393,7 @@ class PkClient {
       } on Object catch (e) {
         // Codec or stream error — fail the transaction so callers don't hang.
         if (!done.isCompleted) {
-          done.completeError(
-              PkException('Internal decode error: $e'));
+          done.completeError(PkException('Internal decode error: $e'));
         }
         Future.microtask(close);
       }

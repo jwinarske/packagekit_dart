@@ -1,0 +1,22 @@
+name: packagekit_catalog
+description: A Linux desktop app for browsing and managing PackageKit packages.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.0
+  packagekit_dart:
+    path: ../..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
