@@ -132,6 +132,18 @@ class PkClient {
       _startQuery(
           (h) => PkBindings.resolve(h, PkFilter.combine(filters), names));
 
+  /// Find packages that provide the given capabilities/[values] (rpm/deb
+  /// `Provides:`, file paths, virtual names). Unlike [resolve], which matches
+  /// package names only, this resolves provides such as `pkg-config`
+  /// (provided by `pkgconf-pkg-config`) or `libjpeg-devel`
+  /// (provided by `libjpeg-turbo-devel`).
+  PkTransaction whatProvides(
+    List<String> values, {
+    List<PkFilter> filters = const [PkFilter.none],
+  }) =>
+      _startQuery(
+          (h) => PkBindings.whatProvides(h, PkFilter.combine(filters), values));
+
   /// Retrieves detailed metadata for the given [packageIds].
   PkTransaction getDetails(List<String> packageIds) =>
       _startQuery((h) => PkBindings.getDetails(h, packageIds));

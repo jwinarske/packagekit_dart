@@ -48,6 +48,7 @@ class PkTransactionBridge {
     void getPackages(uint64_t filter);
     void getUpdates(uint64_t filter);
     void resolve(uint64_t filter, const std::vector<std::string>& package_ids);
+    void whatProvides(uint64_t filter, const std::vector<std::string>& values);
     void getDetails(const std::vector<std::string>& package_ids);
     void getUpdateDetail(const std::vector<std::string>& package_ids);
     void getFiles(const std::vector<std::string>& package_ids);

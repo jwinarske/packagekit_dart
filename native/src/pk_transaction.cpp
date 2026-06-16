@@ -187,6 +187,10 @@ void PkTransactionBridge::resolve(uint64_t filter, const std::vector<std::string
     proxy_->callMethod("Resolve").onInterface(PK_TX_IFACE).withArguments(filter, package_ids);
 }
 
+void PkTransactionBridge::whatProvides(uint64_t filter, const std::vector<std::string>& values) {
+    proxy_->callMethod("WhatProvides").onInterface(PK_TX_IFACE).withArguments(filter, values);
+}
+
 void PkTransactionBridge::getDetails(const std::vector<std::string>& package_ids) {
     proxy_->callMethod("GetDetails").onInterface(PK_TX_IFACE).withArguments(package_ids);
 }

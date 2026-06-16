@@ -125,6 +125,10 @@ void pk_resolve(void* handle, uint64_t filter, const char* const* ids, int n_ids
     PK_TX_TRY(handle, tx(handle)->resolve(filter, to_vec(ids, n_ids)));
 }
 
+void pk_what_provides(void* handle, uint64_t filter, const char* const* values, int n_values) {
+    PK_TX_TRY(handle, tx(handle)->whatProvides(filter, to_vec(values, n_values)));
+}
+
 void pk_get_details(void* handle, const char* const* ids, int n_ids) {
     PK_TX_TRY(handle, tx(handle)->getDetails(to_vec(ids, n_ids)));
 }
