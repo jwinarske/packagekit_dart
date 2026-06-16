@@ -12,6 +12,8 @@ doc/api/
 
 # C++ build
 native/build/
+native/_*
+.cache/
 compile_commands.json
 CMakeFiles/
 CMakeCache.txt
