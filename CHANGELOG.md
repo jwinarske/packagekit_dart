@@ -1,3 +1,14 @@
+## 0.3.1
+
+- Add `WhatProvides` (native `pk_what_provides`, FFI binding, and
+  `PkClient.whatProvides`) — resolve capabilities / provides / file paths
+  (e.g. `pkg-config`, provided by `pkgconf-pkg-config`), matching `dnf`/`apt`
+  install behavior. Mirrors the existing `Resolve` path.
+- Add `setPackagekitLibraryPath()` to point the native-library loader at a
+  prebuilt `libpackagekit_nc.so`, taking precedence over `PK_NC_LIB`. Useful
+  for path/git dependencies that ship or build the `.so` outside the build
+  hook.
+
 ## 0.3.0
 
 - Extract TransactionDispatcher and dispatchManagerEvent for testable
