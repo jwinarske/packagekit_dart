@@ -1,3 +1,8 @@
+## 0.3.2
+
+- Point `repository` and `issue_tracker` at the jwinarske fork, fixing
+  pub.dev repository verification.
+
 ## 0.3.1
 
 - Add `WhatProvides` (native `pk_what_provides`, FFI binding, and
