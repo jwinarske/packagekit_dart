@@ -5,7 +5,26 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+/// Optional explicit path to `libpackagekit_nc.so`, set by
+/// [setPackagekitLibraryPath]. Takes precedence over every other resolution
+/// strategy. Must be set before the first `PkClient` use (the library handle
+/// is loaded lazily on first access).
+String? _overridePath;
+
+/// Override the path used to load the native `libpackagekit_nc` library.
+///
+/// Useful for consumers that depend on `packagekit_dart` via a path/git
+/// dependency: they can point the loader at a prebuilt `libpackagekit_nc.so`
+/// without setting the `PK_NC_LIB` environment variable. No effect once the
+/// library has already been loaded.
+void setPackagekitLibraryPath(String path) => _overridePath = path;
+
 DynamicLibrary loadPackagekitNc() {
+  // 0. Explicit programmatic override.
+  if (_overridePath != null && _overridePath!.isNotEmpty) {
+    return DynamicLibrary.open(_overridePath!);
+  }
+
   // 1. Environment variable override.
   final envPath = Platform.environment['PK_NC_LIB'];
   if (envPath != null && envPath.isNotEmpty) {
