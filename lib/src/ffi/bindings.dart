@@ -80,6 +80,8 @@ class PkBindings {
       _getUpdates(h as Pointer<Void>, filter);
   static void resolve(Object h, int filter, List<String> ids) =>
       _callStringList(_resolve, h, filter, ids);
+  static void whatProvides(Object h, int filter, List<String> values) =>
+      _callStringList(_whatProvides, h, filter, values);
   static void getDetails(Object h, List<String> ids) =>
       _callIds(_getDetails, h, ids);
   static void getUpdateDetail(Object h, List<String> ids) =>
@@ -183,6 +185,11 @@ class PkBindings {
       Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32),
       void Function(
           Pointer<Void>, int, Pointer<Pointer<Utf8>>, int)>('pk_resolve');
+
+  static final _whatProvides = _lib.lookupFunction<
+      Void Function(Pointer<Void>, Uint64, Pointer<Pointer<Utf8>>, Int32),
+      void Function(
+          Pointer<Void>, int, Pointer<Pointer<Utf8>>, int)>('pk_what_provides');
 
   static final _getDetails = _lib.lookupFunction<
       Void Function(Pointer<Void>, Pointer<Pointer<Utf8>>, Int32),

@@ -53,6 +53,8 @@ PK_EXPORT void pk_search_groups(void* handle, uint64_t filter, const char* const
 PK_EXPORT void pk_get_packages(void* handle, uint64_t filter);
 PK_EXPORT void pk_get_updates(void* handle, uint64_t filter);
 PK_EXPORT void pk_resolve(void* handle, uint64_t filter, const char* const* ids, int n_ids);
+PK_EXPORT void pk_what_provides(void* handle, uint64_t filter, const char* const* values,
+                                int n_values);
 PK_EXPORT void pk_get_details(void* handle, const char* const* ids, int n_ids);
 PK_EXPORT void pk_get_update_detail(void* handle, const char* const* ids, int n_ids);
 PK_EXPORT void pk_get_files(void* handle, const char* const* ids, int n_ids);
